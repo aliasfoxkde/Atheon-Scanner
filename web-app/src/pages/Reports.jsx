@@ -1,28 +1,59 @@
 import { useState, useEffect } from 'react'
+import apiService from '../services/api'
+import { mockReports, filterReports, simulateApiCall } from '../services/mockData'
+import ReportDetailModal from '../components/ReportDetailModal'
 
 export default function Reports() {
+  const [selectedReport, setSelectedReport] = useState(null)
+  const [showModal, setShowModal] = useState(false)
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [filters, setFilters] = useState({
     category: '',
     tier: '',
     language: '',
-    minScore: ''
+    minScore: '',
+    search: ''
+  })
+  const [pagination, setPagination] = useState({
+    page: 1,
+    perPage: 20,
+    total: 0
   })
 
   useEffect(() => {
     fetchReports()
-  }, [])
+  }, [filters])
 
   const fetchReports = async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams(filters)
-      const response = await fetch(`/api/reports?${params}`)
-      const data = await response.json()
-      setReports(data.reports || [])
-    } catch (error) {
-      console.error('Failed to fetch reports:', error)
+      setError(null)
+
+      const response = await apiService.getReports(filters)
+
+      if (response.success) {
+        setReports(response.data.reports || [])
+        setPagination({
+          page: response.data.page || 1,
+          perPage: response.data.perPage || 20,
+          total: response.data.total || 0
+        })
+      } else {
+        throw new Error(response.error)
+      }
+    } catch (err) {
+      console.log('Using mock data:', err.message)
+      // Fallback to mock data
+      const filteredReports = filterReports(mockReports, filters)
+      await simulateApiCall(filteredReports)
+      setReports(filteredReports)
+      setPagination({
+        page: 1,
+        perPage: 20,
+        total: filteredReports.length
+      })
     } finally {
       setLoading(false)
     }
@@ -30,6 +61,16 @@ export default function Reports() {
 
   const handleFilterChange = (field, value) => {
     setFilters({ ...filters, [field]: value })
+  }
+
+  const clearFilters = () => {
+    setFilters({
+      category: '',
+      tier: '',
+      language: '',
+      minScore: '',
+      search: ''
+    })
   }
 
   return (
@@ -42,9 +83,29 @@ export default function Reports() {
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h2 className="text-xl font-semibold text-white mb-4">Filter Reports</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-white">Filter Reports</h2>
+          <button
+            onClick={clearFilters}
+            className="text-sm text-blue-400 hover:text-blue-300"
+          >
+            Clear Filters
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="mb-4">
+          <input
+            type="text"
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            placeholder="Search repositories..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Category
@@ -52,7 +113,7 @@ export default function Reports() {
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
             >
               <option value="">All Categories</option>
               <option value="web-framework">Web Frameworks</option>
@@ -70,7 +131,7 @@ export default function Reports() {
             <select
               value={filters.tier}
               onChange={(e) => handleFilterChange('tier', e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
             >
               <option value="">All Tiers</option>
               <option value="A">Tier A (90-100)</option>
@@ -88,7 +149,7 @@ export default function Reports() {
             <select
               value={filters.language}
               onChange={(e) => handleFilterChange('language', e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
             >
               <option value="">All Languages</option>
               <option value="javascript">JavaScript</option>
@@ -111,9 +172,14 @@ export default function Reports() {
               placeholder="0"
               min="0"
               max="100"
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm"
             />
           </div>
+        </div>
+
+        {/* Results count */}
+        <div className="mt-4 text-sm text-gray-400">
+          Showing {reports.length} of {pagination.total} reports
         </div>
       </div>
 
@@ -178,7 +244,13 @@ export default function Reports() {
                       {report.total_findings}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="text-blue-400 hover:text-blue-300 mr-3">
+                      <button
+                        onClick={() => {
+                          setSelectedReport(report)
+                          setShowModal(true)
+                        }}
+                        className="text-blue-400 hover:text-blue-300 mr-3"
+                      >
                         View
                       </button>
                       <button className="text-gray-400 hover:text-white">
@@ -191,6 +263,17 @@ export default function Reports() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Report Detail Modal */}
+      {showModal && selectedReport && (
+        <ReportDetailModal
+          report={selectedReport}
+          onClose={() => {
+            setShowModal(false)
+            setSelectedReport(null)
+          }}
+        />
       )}
     </div>
   )

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="8" fill="url(#grad3)"/>
+
+  <!-- Simple shield icon -->
+  <path d="M16 4L4 10V20C4 26 12 28 16 28C20 28 28 26 28 20V10L16 4Z"
+        fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Checkmark -->
+  <path d="M12 16L14 18L20 12"
+        fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -4,6 +4,7 @@ import apiService from '../services/api';
 import { mockStats, simulateApiCall } from '../services/mockData';
 import SpiderChart from '../components/Charts';
 import { BarChart, DonutChart } from '../components/Charts';
+import SecurityRadarChart from '../components/SecurityRadarChart';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -208,20 +209,16 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Security Overview with Interactive Donut Chart */}
-        <div className="bg-gray-800/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
+        {/* Security Overview with Enhanced Radar Chart */}
+        <div className="bg-gray-800/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-red-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10">
           <div className="p-4 sm:p-6 border-b border-gray-700">
             <h2 className="text-lg sm:text-xl font-semibold text-white">Security Findings Distribution</h2>
           </div>
           <div className="p-4 sm:p-6">
-            <DonutChart
-              data={{
-                'Critical': stats.securityStats.critical,
-                'High': stats.securityStats.high,
-                'Medium': stats.securityStats.medium,
-                'Low': stats.securityStats.low
-              }}
-              title="Security Issues by Severity"
+            <SecurityRadarChart
+              securityData={stats.securityStats}
+              totalRepos={stats.totalRepos}
+              size={400}
             />
           </div>
         </div>

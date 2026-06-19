@@ -323,7 +323,74 @@ export const mockReports = [
 ];
 
 export const mockStats = {
-};
+  total_repositories: 2000,
+  total_scans: 2000,
+  average_quality_score: 72.9,
+  tier_distribution: {
+    A: 0,
+    B: 796,
+    C: 1180,
+    D: 24,
+    F: 0
+  },
+  top_languages: [
+    { language: 'JavaScript', count: 1000, avg_score: 72.5 },
+    { language: 'Python', count: 1000, avg_score: 73.3 }
+  ],
+  security_stats: {
+    total_findings: 26076,
+    critical: 34,
+    high: 1182,
+    medium: 7997,
+    low: 16863
+  },
+  recent_scans: [
+    {
+      id: 'scan_1',
+      repo_name: 'react/react',
+      language: 'JavaScript',
+      stars: 245961,
+      quality_score: 68.6,
+      tier: 'C',
+      scan_date: '2024-06-19T11:39:34Z'
+    },
+    {
+      id: 'scan_2',
+      repo_name: 'affaan-m/ECC',
+      language: 'JavaScript',
+      stars: 218098,
+      quality_score: 70.4,
+      tier: 'C',
+      scan_date: '2024-06-19T11:39:34Z'
+    },
+    {
+      id: 'scan_3',
+      repo_name: 'trekhleb/javascript-algorithms',
+      language: 'JavaScript',
+      stars: 196102,
+      quality_score: 71.3,
+      tier: 'C',
+      scan_date: '2024-06-19T11:39:34Z'
+    },
+    {
+      id: 'scan_4',
+      repo_name: 'suitenumerique/docs',
+      language: 'Python',
+      stars: 16720,
+      quality_score: 69.0,
+      tier: 'C',
+      scan_date: '2024-06-19T12:11:28Z'
+    },
+    {
+      id: 'scan_5',
+      repo_name: 'cool-RR/PySnooper',
+      language: 'Python',
+      stars: 16585,
+      quality_score: 81.6,
+      tier: 'B',
+      scan_date: '2024-06-19T12:11:28Z'
+    }
+  ]
 };
 
 export const mockCategories = [

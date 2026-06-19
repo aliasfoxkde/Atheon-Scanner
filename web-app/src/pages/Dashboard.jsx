@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../services/api';
 import { mockStats, simulateApiCall } from '../services/mockData';
+import SpiderChart from '../components/Charts';
+import { BarChart, DonutChart } from '../components/Charts';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -206,63 +208,61 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Security Overview */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700">
+        {/* Security Overview with Interactive Donut Chart */}
+        <div className="bg-gray-800/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
           <div className="p-4 sm:p-6 border-b border-gray-700">
-            <h2 className="text-lg sm:text-xl font-semibold text-white">Security Overview</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-white">Security Findings Distribution</h2>
           </div>
-          <div className="p-4 sm:p-6 space-y-4">
-            {[
-              { label: 'Critical', count: stats.securityStats.critical, color: 'red', percentage: (stats.securityStats.critical / stats.securityStats.totalFindings * 100).toFixed(1) },
-              { label: 'High', count: stats.securityStats.high, color: 'orange', percentage: (stats.securityStats.high / stats.securityStats.totalFindings * 100).toFixed(1) },
-              { label: 'Medium', count: stats.securityStats.medium, color: 'yellow', percentage: (stats.securityStats.medium / stats.securityStats.totalFindings * 100).toFixed(1) },
-              { label: 'Low', count: stats.securityStats.low, color: 'blue', percentage: (stats.securityStats.low / stats.securityStats.totalFindings * 100).toFixed(1) },
-            ].map((item) => (
-              <div key={item.label} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-300">{item.label}</span>
-                  <span className="text-sm font-medium text-gray-300">{item.count} ({item.percentage}%)</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div
-                    className={`bg-${item.color}-500 h-2 rounded-full`}
-                    style={{ width: `${item.percentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-            <div className="pt-4 border-t border-gray-700">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-400">Total Findings</span>
-                <span className="text-lg font-semibold text-white">{stats.securityStats.totalFindings}</span>
-              </div>
-            </div>
+          <div className="p-4 sm:p-6">
+            <DonutChart
+              data={{
+                'Critical': stats.securityStats.critical,
+                'High': stats.securityStats.high,
+                'Medium': stats.securityStats.medium,
+                'Low': stats.securityStats.low
+              }}
+              title="Security Issues by Severity"
+            />
           </div>
         </div>
       </div>
 
-      {/* Tier Distribution */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
+      {/* Tier Distribution with Interactive Bar Chart */}
+      <div className="bg-gray-800/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
         <div className="p-4 sm:p-6 border-b border-gray-700">
           <h2 className="text-lg sm:text-xl font-semibold text-white">Quality Tier Distribution</h2>
         </div>
         <div className="p-4 sm:p-6">
-          <div className="grid grid-cols-5 gap-2 sm:gap-4">
-            {['A', 'B', 'C', 'D', 'F'].map((tier) => (
-              <div key={tier} className="text-center">
-                <div className={`w-full aspect-square rounded-lg flex items-center justify-center ${getTierBgColor(tier)}`}>
-                  <span className="text-2xl sm:text-3xl font-bold text-white">{stats.tierDistribution[tier]}</span>
-                </div>
-                <p className="mt-2 text-sm font-medium text-gray-300">Tier {tier}</p>
-                <p className="text-xs text-gray-400">{((stats.tierDistribution[tier] / stats.totalRepos) * 100).toFixed(0)}%</p>
-              </div>
-            ))}
-          </div>
+          <BarChart
+            data={stats.tierDistribution}
+            title="Repositories by Quality Tier"
+          />
+        </div>
+      </div>
+
+      {/* Quality Analysis Spider Chart */}
+      <div className="bg-gray-800/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-green-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10">
+        <div className="p-4 sm:p-6 border-b border-gray-700">
+          <h2 className="text-lg sm:text-xl font-semibold text-white">Code Quality Analysis</h2>
+        </div>
+        <div className="p-4 sm:p-6">
+          <SpiderChart
+            data={{
+              'Security': stats.avgQualityScore * 0.9,
+              'Performance': stats.avgQualityScore * 0.85,
+              'Maintainability': stats.avgQualityScore * 0.92,
+              'Code Coverage': stats.avgQualityScore * 0.8,
+              'Documentation': stats.avgQualityScore * 0.75,
+              'Testing': stats.avgQualityScore * 0.88
+            }}
+            title="Overall Code Quality Metrics"
+            size={400}
+          />
         </div>
       </div>
 
       {/* Top Languages */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
+      <div className="bg-gray-800/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-yellow-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/10">
         <div className="p-4 sm:p-6 border-b border-gray-700">
           <h2 className="text-lg sm:text-xl font-semibold text-white">Top Programming Languages</h2>
         </div>

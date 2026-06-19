@@ -1,0 +1,98 @@
+{
+  "total_target": 3000,
+  "ecosystems_discovered": 3,
+  "packages_discovered": 29,
+  "repositories_found": 23,
+  "repositories_scanned": 23,
+  "ecosystems_analyzed": {
+    "npm": 10,
+    "pypi": 9,
+    "rubygems": 10,
+    "cargo": 0,
+    "composer": 0
+  },
+  "language_distribution": {
+    "JavaScript": 10,
+    "Python": 5,
+    "Ruby": 8
+  },
+  "platform_distribution": {},
+  "cross_ecosystem_comparisons": {
+    "ecosystem_comparison": {
+      "npm": {
+        "repository_count": 11,
+        "average_quality_score": 100.0,
+        "average_lines_of_code": 641831,
+        "cross_ecosystem_support_count": 11,
+        "cross_ecosystem_percentage": 100.0
+      },
+      "pypi": {
+        "repository_count": 4,
+        "average_quality_score": 100.0,
+        "average_lines_of_code": 62302,
+        "cross_ecosystem_support_count": 4,
+        "cross_ecosystem_percentage": 100.0
+      },
+      "rubygems": {
+        "repository_count": 8,
+        "average_quality_score": 100.0,
+        "average_lines_of_code": 67884,
+        "cross_ecosystem_support_count": 0,
+        "cross_ecosystem_percentage": 0.0
+      }
+    },
+    "language_comparison": {
+      "JavaScript": {
+        "repository_count": 10,
+        "average_quality_score": 100.0,
+        "ecosystems_supported": [
+          "npm"
+        ],
+        "ecosystem_count": 1
+      },
+      "Python": {
+        "repository_count": 5,
+        "average_quality_score": 100.0,
+        "ecosystems_supported": [
+          "pypi",
+          "npm"
+        ],
+        "ecosystem_count": 2
+      },
+      "Ruby": {
+        "repository_count": 8,
+        "average_quality_score": 100.0,
+        "ecosystems_supported": [
+          "rubygems"
+        ],
+        "ecosystem_count": 1
+      }
+    },
+    "quality_comparison": {},
+    "cross_ecosystem_support": {
+      "cross_ecosystem_repository_count": 15,
+      "cross_ecosystem_percentage": 65.2,
+      "most_common_combinations": [
+        {
+          "ecosystems": "npm+yarn",
+          "count": 9
+        },
+        {
+          "ecosystems": "poetry+pypi",
+          "count": 4
+        },
+        {
+          "ecosystems": "bower+composer+npm+yarn",
+          "count": 1
+        },
+        {
+          "ecosystems": "npm+poetry+pypi+yarn",
+          "count": 1
+        }
+      ]
+    },
+    "ecosystem_health_metrics": {}
+  },
+  "start_time": "2026-06-19T14:46:13.706025",
+  "errors": []
+}

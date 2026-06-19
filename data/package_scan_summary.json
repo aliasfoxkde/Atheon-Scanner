@@ -1,0 +1,24 @@
+{
+  "scan_status": "complete",
+  "scan_date": "2026-06-19T14:42:24.939254",
+  "duration_hours": 0.00918626861111111,
+  "packages_discovered": 20,
+  "repositories_found": 1,
+  "repositories_scanned": 1,
+  "packages_analyzed": {
+    "npm": 1,
+    "pypi": 0,
+    "cargo": 0
+  },
+  "average_quality_score": 100.0,
+  "tier_distribution": {
+    "A": 1
+  },
+  "registry_distribution": {
+    "npm": 1
+  },
+  "errors_count": 0,
+  "data_source": "PACKAGE_REGISTRY_SCANNER",
+  "verification_status": "VERIFIED",
+  "methodology": "package_ecosystem_discovery"
+}

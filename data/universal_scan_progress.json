@@ -1,0 +1,66 @@
+{
+  "total_target": 3000,
+  "packages_discovered": 29,
+  "repositories_found": 23,
+  "repositories_scanned": 23,
+  "ecosystems_analyzed": {
+    "npm": 10,
+    "pypi": 9,
+    "rubygems": 10,
+    "composer": 0
+  },
+  "cross_ecosystem_comparisons": {
+    "ecosystem_comparison": {
+      "npm": {
+        "repository_count": 11,
+        "average_quality_score": 100.0,
+        "average_lines_of_code": 641831,
+        "average_commits": 1,
+        "cross_ecosystem_support": 2
+      },
+      "pypi": {
+        "repository_count": 4,
+        "average_quality_score": 100.0,
+        "average_lines_of_code": 62302,
+        "average_commits": 1,
+        "cross_ecosystem_support": 0
+      },
+      "rubygems": {
+        "repository_count": 8,
+        "average_quality_score": 100.0,
+        "average_lines_of_code": 65512,
+        "average_commits": 1,
+        "cross_ecosystem_support": 0
+      }
+    },
+    "language_comparison": {
+      "JavaScript": {
+        "repository_count": 10,
+        "average_quality_score": 100.0,
+        "ecosystems": [
+          "npm"
+        ]
+      },
+      "Python": {
+        "repository_count": 5,
+        "average_quality_score": 100.0,
+        "ecosystems": [
+          "npm",
+          "pypi"
+        ]
+      },
+      "Ruby": {
+        "repository_count": 8,
+        "average_quality_score": 100.0,
+        "ecosystems": [
+          "rubygems"
+        ]
+      }
+    },
+    "quality_comparison": {},
+    "size_comparison": {},
+    "activity_comparison": {}
+  },
+  "start_time": "2026-06-19T14:43:37.244406",
+  "errors": []
+}

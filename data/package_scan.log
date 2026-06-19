@@ -1,0 +1,35 @@
+2026-06-19 14:41:16,429 - INFO - 🚀 STARTING PACKAGE REGISTRY SCAN: Target 7000 repositories
+2026-06-19 14:41:16,429 - INFO - Scanning npm packages...
+2026-06-19 14:41:16,429 - INFO - Searching npm packages: stars:>100
+2026-06-19 14:41:17,533 - WARNING - Failed to get npm package info for vue: 'str' object has no attribute 'get'
+2026-06-19 14:41:31,604 - INFO - 🚀 STARTING PACKAGE REGISTRY SCAN: Target 7000 repositories
+2026-06-19 14:41:31,604 - INFO - Scanning npm packages...
+2026-06-19 14:41:31,604 - INFO - Searching npm packages: stars:>100
+2026-06-19 14:41:32,809 - WARNING - Failed to get npm package info for vue: 'str' object has no attribute 'get'
+2026-06-19 14:41:41,314 - INFO - Cloning webpack/webpack from npm package...
+2026-06-19 14:41:44,055 - INFO - Analyzing webpack/webpack...
+2026-06-19 14:41:46,729 - INFO - Scanning PyPI packages...
+2026-06-19 14:41:46,729 - INFO - Searching PyPI packages
+2026-06-19 14:41:51,868 - INFO - 🚀 STARTING PACKAGE REGISTRY SCAN: Target 7000 repositories
+2026-06-19 14:41:51,868 - INFO - Scanning npm packages...
+2026-06-19 14:41:51,868 - INFO - Searching npm packages: stars:>100
+2026-06-19 14:42:02,626 - INFO - Cloning webpack/webpack from npm package...
+2026-06-19 14:42:04,970 - INFO - Analyzing webpack/webpack...
+2026-06-19 14:42:07,145 - INFO - Scanning PyPI packages...
+2026-06-19 14:42:07,145 - INFO - Searching PyPI packages
+2026-06-19 14:42:12,850 - INFO - Found 10 PyPI packages
+2026-06-19 14:42:22,851 - INFO - Scanning Cargo crates...
+2026-06-19 14:42:22,851 - INFO - Searching Cargo crates
+2026-06-19 14:42:23,105 - WARNING - Failed to get Cargo crate info for serde: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/serde
+2026-06-19 14:42:23,309 - WARNING - Failed to get Cargo crate info for tokio: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/tokio
+2026-06-19 14:42:23,517 - WARNING - Failed to get Cargo crate info for clap: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/clap
+2026-06-19 14:42:23,707 - WARNING - Failed to get Cargo crate info for rayon: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/rayon
+2026-06-19 14:42:23,907 - WARNING - Failed to get Cargo crate info for anyhow: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/anyhow
+2026-06-19 14:42:24,104 - WARNING - Failed to get Cargo crate info for log: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/log
+2026-06-19 14:42:24,312 - WARNING - Failed to get Cargo crate info for regex: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/regex
+2026-06-19 14:42:24,517 - WARNING - Failed to get Cargo crate info for hyper: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/hyper
+2026-06-19 14:42:24,721 - WARNING - Failed to get Cargo crate info for rand: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/rand
+2026-06-19 14:42:24,937 - WARNING - Failed to get Cargo crate info for uuid: 403 Client Error: Forbidden for url: https://crates.io/api/v1/crates/uuid
+2026-06-19 14:42:24,939 - INFO - Found 0 Cargo crates
+2026-06-19 14:42:24,939 - INFO - Summary saved to /nas/Temp/repos/Atheon-GitHub-Scanner/data/package_scan_summary.json
+2026-06-19 14:42:24,939 - INFO - ✅ PACKAGE SCAN COMPLETE: 1 repos in 0.0 hours

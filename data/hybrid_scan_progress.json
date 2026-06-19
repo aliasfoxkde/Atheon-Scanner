@@ -1,0 +1,14 @@
+{
+  "total_target": 7000,
+  "repositories_discovered": 0,
+  "repositories_scanned": 2,
+  "repositories_cloned": 2,
+  "batch_number": 1,
+  "start_time": "2026-06-19T14:40:10.097691",
+  "repositories_per_method": {
+    "api": 0,
+    "clone": 2
+  },
+  "errors": [],
+  "priority_repos_scanned": true
+}

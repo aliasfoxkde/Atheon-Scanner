@@ -1,0 +1,16 @@
+{
+  "total_target": 5000,
+  "repositories_scanned": 200,
+  "batch_number": 2,
+  "start_time": "2026-06-19T14:33:28.002274",
+  "repositories_per_language": {
+    "JavaScript": 150,
+    "Python": 48
+  },
+  "errors": [],
+  "finders": [
+    "priority_aliasfoxkde/Atheon-Enhanced",
+    "priority_LTTLabsOSS/markbench-tests"
+  ],
+  "priority_repos_scanned": true
+}

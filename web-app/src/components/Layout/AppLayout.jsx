@@ -29,21 +29,31 @@ const AppLayout = ({ children }) => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex space-x-5">
               <Link to="/dashboard" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/dashboard') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
               }`}>
                 Dashboard
               </Link>
-              <Link to="/submit" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/submit') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
-              }`}>
-                Analyze Code
-              </Link>
               <Link to="/reports" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/reports') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
               }`}>
-                Browse Reports
+                Reports
+              </Link>
+              <Link to="/trending" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/trending') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}>
+                Trending
+              </Link>
+              <Link to="/submit" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/submit') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}>
+                Submit
+              </Link>
+              <Link to="/pipeline" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/pipeline') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}>
+                Pipeline
               </Link>
               <Link to="/api" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/api') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
@@ -86,22 +96,40 @@ const AppLayout = ({ children }) => {
                 Dashboard
               </Link>
               <Link
-                to="/submit"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/submit') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                }`}
-              >
-                Analyze Code
-              </Link>
-              <Link
                 to="/reports"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   isActive('/reports') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
                 }`}
               >
-                Browse Reports
+                Reports
+              </Link>
+              <Link
+                to="/trending"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/trending') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                Trending
+              </Link>
+              <Link
+                to="/submit"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/submit') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                Submit
+              </Link>
+              <Link
+                to="/pipeline"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/pipeline') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                Pipeline
               </Link>
               <Link
                 to="/api"
@@ -110,7 +138,7 @@ const AppLayout = ({ children }) => {
                   isActive('/api') ? 'text-white bg-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-700'
                 }`}
               >
-                API Docs
+                API
               </Link>
             </div>
           </div>

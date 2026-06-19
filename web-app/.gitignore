@@ -7,3 +7,6 @@ dist/
 .env.test.local
 .env.production.local
 .wrangler/
+test-results/
+playwright-report/
+test-screenshots/

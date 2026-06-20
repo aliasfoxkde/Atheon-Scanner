@@ -90,7 +90,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // NEVER enable sourcemaps for deployed web apps - security/performance risk
     rollupOptions: {
       output: {
         manualChunks: {

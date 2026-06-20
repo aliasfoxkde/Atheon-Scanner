@@ -12,3 +12,36 @@
 2026-06-19 14:21:45,888 - __main__ - INFO - Collecting performance metrics...
 2026-06-19 14:21:45,889 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260619_142145.json
 2026-06-19 14:21:45,889 - __main__ - INFO - ✅ Health Monitoring Complete - Status: degraded
+2026-06-19 18:00:02,024 - __main__ - INFO - 🏥 Starting Health Monitoring
+2026-06-19 18:00:02,024 - __main__ - INFO - 🏥 Starting Health Monitoring
+2026-06-19 18:00:02,024 - __main__ - INFO - Checking system health...
+2026-06-19 18:00:02,024 - __main__ - INFO - Checking system health...
+2026-06-19 18:00:03,234 - __main__ - INFO - Checking automation health...
+2026-06-19 18:00:03,234 - __main__ - INFO - Checking automation health...
+2026-06-19 18:00:03,235 - __main__ - ERROR - Failed to check quality gates: 'NoneType' object has no attribute 'get'
+2026-06-19 18:00:03,235 - __main__ - ERROR - Failed to check quality gates: 'NoneType' object has no attribute 'get'
+2026-06-19 18:00:03,235 - __main__ - INFO - Collecting performance metrics...
+2026-06-19 18:00:03,235 - __main__ - INFO - Collecting performance metrics...
+2026-06-19 18:00:03,235 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260619_180003.json
+2026-06-19 18:00:03,235 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260619_180003.json
+2026-06-19 18:00:03,235 - __main__ - WARNING - ⚠️  Processing 1 critical alerts
+2026-06-19 18:00:03,235 - __main__ - WARNING - ⚠️  Processing 1 critical alerts
+2026-06-19 18:00:03,236 - __main__ - WARNING - CRITICAL ALERT: Disk usage above threshold: 90.2% > 90.0%
+2026-06-19 18:00:03,236 - __main__ - WARNING - CRITICAL ALERT: Disk usage above threshold: 90.2% > 90.0%
+2026-06-19 18:00:03,236 - __main__ - INFO - ✅ Health Monitoring Complete - Status: critical
+2026-06-19 18:00:03,236 - __main__ - INFO - ✅ Health Monitoring Complete - Status: critical
+🏥 Atheon GitHub Scanner - Monitoring Agent
+============================================================
+
+📊 Health Monitoring Results:
+   Overall Status: CRITICAL
+   Uptime: 100.0%
+   Timestamp: 2026-06-19T18:00:03.235526
+
+⚠️  Alerts: 2
+   - CRITICAL: Disk usage above threshold: 90.2% > 90.0%
+   - WARNING: No execution history found
+
+💡 Recommendations:
+   1. IMMEDIATE ACTION REQUIRED: Address critical alerts
+   2. Review system logs and error reports

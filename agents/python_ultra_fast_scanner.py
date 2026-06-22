@@ -18,6 +18,7 @@ import logging
 import subprocess
 import tempfile
 import shutil
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
@@ -28,6 +29,11 @@ import threading
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def sanitize_package_name(name: str) -> str:
+    """Remove anything except alphanumeric, dash, underscore, dot"""
+    return re.sub(r'[^a-zA-Z0-9._-]', '', name)
 
 class UltraFastPythonScanner:
     """Ultra-fast PyPI scanner with no limits"""
@@ -156,7 +162,9 @@ class UltraFastPythonScanner:
                 if current_count % 50 == 0 and current_count > 0:
                     logger.info(f"📊 Progress: {current_count} Python packages scanned")
 
-            package_dir = self.temp_dir / f"python_worker_{worker_id}" / package_name.replace('/', '_')
+            # Sanitize package name for use in paths and commands
+            safe_package_name = sanitize_package_name(package_name)
+            package_dir = self.temp_dir / f"python_worker_{worker_id}" / safe_package_name.replace('/', '_')
             package_dir.mkdir(parents=True, exist_ok=True)
 
             # Try using UV first (much faster), fallback to pip
@@ -165,12 +173,12 @@ class UltraFastPythonScanner:
             if use_uv:
                 download_cmd = [
                     'uv', 'pip', 'install', '--target', str(package_dir / 'lib'),
-                    '--quiet', package_name
+                    '--quiet', safe_package_name
                 ]
             else:
                 download_cmd = [
                     'pip3', 'install', '--target', str(package_dir / 'lib'),
-                    '--quiet', package_name
+                    '--quiet', safe_package_name
                 ]
 
             result = subprocess.run(

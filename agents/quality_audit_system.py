@@ -22,6 +22,11 @@ logging.basicConfig(
 logger = logging.getLogger('QualityAuditor')
 
 
+def sanitize_path(path: str) -> str:
+    """Remove anything except alphanumeric, dash, underscore, dot, slash, space"""
+    return re.sub(r'[^a-zA-Z0-9._/\- ]', '', path)
+
+
 class QualityGate:
     """Quality gate enforcement for automatic approvals"""
 
@@ -153,9 +158,10 @@ class QualityGate:
         result = {'passed': True, 'issues': []}
 
         try:
+            safe_path = sanitize_path(str(file_path))
             # Check with black (formatting)
             result_black = subprocess.run(
-                ['black', '--check', str(file_path)],
+                ['black', '--check', safe_path],
                 capture_output=True,
                 text=True
             )
@@ -166,7 +172,7 @@ class QualityGate:
 
             # Check with pylint (code quality)
             result_pylint = subprocess.run(
-                ['pylint', str(file_path)],
+                ['pylint', safe_path],
                 capture_output=True,
                 text=True
             )
@@ -185,9 +191,10 @@ class QualityGate:
         result = {'passed': True, 'issues': []}
 
         try:
+            safe_path = sanitize_path(str(file_path))
             # Check with eslint
             result_eslint = subprocess.run(
-                ['eslint', str(file_path)],
+                ['eslint', safe_path],
                 capture_output=True,
                 text=True
             )
@@ -206,9 +213,10 @@ class QualityGate:
         result = {'passed': True, 'issues': []}
 
         try:
+            safe_path = sanitize_path(str(file_path))
             # Check with go vet
             result_vet = subprocess.run(
-                ['go', 'vet', str(file_path)],
+                ['go', 'vet', safe_path],
                 capture_output=True,
                 text=True
             )
@@ -231,9 +239,10 @@ class QualityGate:
 
             # Run tests based on repository type
             if pr_info.get('language') == 'python':
+                safe_repo_path = sanitize_path(repo_path)
                 test_result = subprocess.run(
                     ['pytest', '--cov', '--cov-report=term-missing', '--tb=short'],
-                    cwd=repo_path,
+                    cwd=safe_repo_path,
                     capture_output=True,
                     text=True,
                     timeout=300
@@ -248,9 +257,10 @@ class QualityGate:
                         result['issues'].append(f"Test coverage {coverage}% below {self.gate_config['testing']['min_coverage']}%")
 
             elif pr_info.get('language') in ['javascript', 'typescript']:
+                safe_repo_path = sanitize_path(repo_path)
                 test_result = subprocess.run(
                     ['npm', 'test', '--', '--coverage'],
-                    cwd=repo_path,
+                    cwd=safe_repo_path,
                     capture_output=True,
                     text=True,
                     timeout=300
@@ -479,9 +489,10 @@ class QualityGate:
         result = {'passed': True, 'issues': []}
 
         try:
-            # Use radic complex or similar
+            safe_path = sanitize_path(str(file_path))
+            # Use radon complex or similar
             result_radon = subprocess.run(
-                ['radon', 'cc', str(file_path), '--min', 'A'],
+                ['radon', 'cc', safe_path, '--min', 'A'],
                 capture_output=True,
                 text=True
             )
@@ -633,8 +644,9 @@ class DailyAuditor:
         try:
             # Run linters
             if (Path(repo_path) / 'pyproject.toml').exists():
+                safe_repo_path = sanitize_path(repo_path)
                 lint_result = subprocess.run(
-                    ['pylint', repo_path, '--max-line-length=100'],
+                    ['pylint', safe_repo_path, '--max-line-length=100'],
                     capture_output=True,
                     text=True
                 )

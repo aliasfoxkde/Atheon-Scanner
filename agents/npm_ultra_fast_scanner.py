@@ -18,6 +18,7 @@ import logging
 import subprocess
 import tempfile
 import shutil
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
@@ -28,6 +29,11 @@ import threading
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def sanitize_package_name(name: str) -> str:
+    """Remove anything except alphanumeric, dash, underscore, dot, at"""
+    return re.sub(r'[^a-zA-Z0-9._@-]', '', name)
 
 class UltraFastNpmScanner:
     """Ultra-fast npm registry scanner with no limits"""
@@ -127,13 +133,15 @@ class UltraFastNpmScanner:
                 if current_count % 100 == 0 and current_count > 0:
                     logger.info(f"📊 Progress: {current_count} packages scanned")
 
-            package_dir = self.temp_dir / f"worker_{worker_id}" / package_name.replace('/', '_')
+            # Sanitize package name for use in paths and commands
+            safe_package_name = sanitize_package_name(package_name)
+            package_dir = self.temp_dir / f"worker_{worker_id}" / safe_package_name.replace('/', '_')
             package_dir.mkdir(parents=True, exist_ok=True)
 
             # Download package using npm
             download_cmd = [
                 'npm', 'install', '--prefix', str(package_dir),
-                '--save', '--save-exact', '--silent', package_name
+                '--save', '--save-exact', '--silent', safe_package_name
             ]
 
             result = subprocess.run(

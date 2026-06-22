@@ -36,6 +36,29 @@ def sanitize_repo_name(name: str) -> str:
     """Remove anything except alphanumeric, dash, underscore, dot, slash"""
     return re.sub(r'[^a-zA-Z0-9._/-]', '', name)
 
+
+def sanitize_path(path: str, base_dir: str = None) -> str:
+    """Prevent path traversal by resolving to absolute and checking bounds.
+
+    Args:
+        path: The path to sanitize
+        base_dir: Optional base directory to constrain path within
+
+    Returns:
+        Sanitized absolute path
+    """
+    # Remove any null bytes and control characters
+    path = path.replace('\x00', '')
+    # Remove path traversal attempts
+    path = re.sub(r'\.\.[/\\]', '', path)
+    abs_path = os.path.abspath(path)
+    if base_dir:
+        base_abs = os.path.abspath(base_dir)
+        if not abs_path.startswith(base_abs):
+            return base_abs
+    return abs_path
+
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -399,6 +422,8 @@ class UniversalPackageScanner:
             # Sanitize the GitHub URL for use in paths
             safe_github_url = sanitize_repo_name(github_url)
             repo_path = self.clone_dir / safe_github_url.replace('/', '_')
+            # Validate path stays within clone_dir bounds
+            repo_path = Path(sanitize_path(str(repo_path), str(self.clone_dir)))
 
             if repo_path.exists():
                 shutil.rmtree(repo_path)

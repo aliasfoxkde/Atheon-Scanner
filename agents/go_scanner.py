@@ -17,6 +17,7 @@ import logging
 import subprocess
 import tempfile
 import shutil
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
@@ -27,6 +28,11 @@ import threading
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def sanitize_package_name(name: str) -> str:
+    """Remove anything except alphanumeric, dash, underscore, dot, slash"""
+    return re.sub(r'[^a-zA-Z0-9._/-]', '', name)
 
 class GoModuleScanner:
     """Go module scanner with parallel processing"""
@@ -88,13 +94,15 @@ class GoModuleScanner:
                 if current_count % 10 == 0 and current_count > 0:
                     logger.info(f"📊 Progress: {current_count} modules scanned")
 
+            # Sanitize module name for use in paths
+            safe_module_name = sanitize_package_name(module_name)
             # Create temporary project directory
-            project_dir = self.temp_dir / f"go_worker_{worker_id}" / module_name.replace('/', '_')
+            project_dir = self.temp_dir / f"go_worker_{worker_id}" / safe_module_name.replace('/', '_')
             project_dir.mkdir(parents=True, exist_ok=True)
 
             # Create a minimal go.mod
             go_mod = f"""
-module {module_name}-scanner
+module {safe_module_name}-scanner
 
 go 1.21
 

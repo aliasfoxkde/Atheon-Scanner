@@ -17,6 +17,30 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
+import re
+
+
+def sanitize_path(path: str, base_dir: str = None) -> str:
+    """Prevent path traversal by resolving to absolute and checking bounds.
+
+    Args:
+        path: The path to sanitize
+        base_dir: Optional base directory to constrain path within
+
+    Returns:
+        Sanitized absolute path
+    """
+    # Remove any null bytes and control characters
+    path = path.replace('\x00', '')
+    # Remove path traversal attempts
+    path = re.sub(r'\.\.[/\\]', '', path)
+    abs_path = os.path.abspath(path)
+    if base_dir:
+        base_abs = os.path.abspath(base_dir)
+        if not abs_path.startswith(base_abs):
+            return base_abs
+    return abs_path
+
 
 # Setup logging
 logging.basicConfig(
@@ -308,6 +332,8 @@ class IntelligenceSharingAgent:
 
             # Save to Atheon main project
             atheon_intel_file = self.atheon_main_dir / "docs" / "planning" / "scanner_intelligence.json"
+            # Validate path stays within base directory
+            atheon_intel_file = Path(sanitize_path(str(atheon_intel_file), str(self.atheon_main_dir)))
             atheon_intel_file.parent.mkdir(parents=True, exist_ok=True)
 
             with open(atheon_intel_file, 'w') as f:
@@ -381,6 +407,8 @@ class IntelligenceSharingAgent:
 
             # Save to Benchmark project
             benchmark_intel_file = self.atheon_benchmark_dir / "planning" / "scanner_intelligence.json"
+            # Validate path stays within base directory
+            benchmark_intel_file = Path(sanitize_path(str(benchmark_intel_file), str(self.atheon_benchmark_dir)))
             benchmark_intel_file.parent.mkdir(parents=True, exist_ok=True)
 
             with open(benchmark_intel_file, 'w') as f:

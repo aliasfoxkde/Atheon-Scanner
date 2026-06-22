@@ -43,7 +43,10 @@ export default function ApiDocs() {
     ]
   },
   "scanId": "scan_abc123"
-}`
+}`,
+      curl: `curl -X POST https://api.atheon-scanner.dev/api/scan \\
+  -H "Content-Type: application/json" \\
+  -d '{"type":"github","repo":"facebook/react"}'`
     },
     {
       id: 'reports',
@@ -75,7 +78,8 @@ export default function ApiDocs() {
   "total": 42,
   "page": 1,
   "perPage": 20
-}`
+}`,
+      curl: `curl https://api.atheon-scanner.dev/api/reports?language=JavaScript&tier=B&minScore=80`
     },
     {
       id: 'report-detail',
@@ -121,7 +125,8 @@ export default function ApiDocs() {
       }
     ]
   }
-}`
+}`,
+      curl: `curl https://api.atheon-scanner.dev/api/reports/report_1`
     },
     {
       id: 'trending',
@@ -145,7 +150,8 @@ export default function ApiDocs() {
       "today_stars": 245
     }
   ]
-}`
+}`,
+      curl: `curl "https://api.atheon-scanner.dev/api/trending?language=TypeScript&since=weekly&limit=10"`
     },
     {
       id: 'stats',
@@ -173,7 +179,8 @@ export default function ApiDocs() {
       { "language": "TypeScript", "count": 28 }
     ]
   }
-}`
+}`,
+      curl: `curl https://api.atheon-scanner.dev/api/stats`
     }
   ]
 
@@ -249,7 +256,8 @@ export default function ApiDocs() {
           scanId: `scan_${Date.now().toString(36)}`,
         }
       } else {
-        data = JSON.parse(endpoint.response)
+        try { data = typeof endpoint.response === 'string' ? JSON.parse(endpoint.response) : endpoint.response }
+        catch { data = endpoint.response }
       }
 
       const duration = Date.now() - start
@@ -358,8 +366,30 @@ export default function ApiDocs() {
                     <h3 className="text-lg font-semibold text-white mb-3">Request Body Example</h3>
                     <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
                       <pre className="text-sm text-gray-300 overflow-x-auto">
-                        {JSON.stringify(JSON.parse(endpoint.requestBody), null, 2)}
+                        {(() => {
+                          try { return JSON.stringify(JSON.parse(endpoint.requestBody), null, 2) }
+                          catch { return endpoint.requestBody }
+                        })()}
                       </pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* cURL Example */}
+                {endpoint.curl && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3">cURL Example</h3>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 flex items-start gap-3">
+                      <pre className="text-sm text-green-400 overflow-x-auto flex-1 font-mono">{endpoint.curl}</pre>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(endpoint.curl).catch(() => {});
+                        }}
+                        className="flex-shrink-0 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded transition-colors"
+                        aria-label="Copy cURL command"
+                      >
+                        Copy
+                      </button>
                     </div>
                   </div>
                 )}

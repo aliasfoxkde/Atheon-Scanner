@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for Atheon-GitHub-Scanner packages and modules.
+Complete API documentation for Atheon-Scanner packages and modules.
 
 ## Table of Contents
 

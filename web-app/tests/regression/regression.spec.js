@@ -71,7 +71,7 @@ test.describe('Regression Tests', () => {
     // Should not have 404 title
     const title = await page.title();
     expect(title).not.toContain('404');
-    expect(title).toContain('Atheon GitHub Scanner');
+    expect(title).toContain('Atheon Scanner');
   });
 
   test('BUGFIX: Charts render with proper data', async ({ page }) => {

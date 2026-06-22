@@ -4,10 +4,12 @@ const ToastContext = createContext(null);
 
 let nextId = 1;
 
+const MAX_TOASTS = 5;
+
 function reducer(state, action) {
   switch (action.type) {
     case 'ADD':
-      return [...state, action.toast];
+      return [...state, action.toast].slice(-MAX_TOASTS); // cap at 5 toasts
     case 'DISMISS':
       return state.filter((t) => t.id !== action.id);
     case 'CLEAR':

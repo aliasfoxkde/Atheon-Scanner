@@ -3,7 +3,7 @@
 ## ❌ MAJOR ISSUE: FALSE DATA CLAIMS
 
 ### Problem Identified
-The Atheon GitHub Scanner system has been displaying **false statistics** about repository scans.
+The Atheon Scanner system has been displaying **false statistics** about repository scans.
 
 ## 🔍 AUDIT FINDINGS
 

@@ -1,6 +1,6 @@
-# Quick Start Guide - Atheon-GitHub-Scanner
+# Quick Start Guide - Atheon-Scanner
 
-This guide will help you get started with the Atheon-GitHub-Scanner system.
+This guide will help you get started with the Atheon-Scanner system.
 
 ## Installation
 
@@ -13,8 +13,8 @@ This guide will help you get started with the Atheon-GitHub-Scanner system.
 
 ```bash
 # Clone the repository
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 
 # Build the scanner
 go build -o scanner cmd/scanner/main.go

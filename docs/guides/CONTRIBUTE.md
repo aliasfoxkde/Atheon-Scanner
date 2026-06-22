@@ -1,6 +1,6 @@
-# Contributing to Atheon-GitHub-Scanner
+# Contributing to Atheon-Scanner
 
-First off, thank you for considering contributing to Atheon-GitHub-Scanner! It's people like you that make this project successful.
+First off, thank you for considering contributing to Atheon-Scanner! It's people like you that make this project successful.
 
 ## Table of Contents
 
@@ -35,8 +35,8 @@ This project adheres to a code of conduct that all contributors are expected to 
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/your-username/Atheon-GitHub-Scanner.git
-   cd Atheon-GitHub-Scanner
+   git clone https://github.com/your-username/Atheon-Scanner.git
+   cd Atheon-Scanner
    ```
 
 2. **Install dependencies**
@@ -277,8 +277,8 @@ func TestScanRepository(t *testing.T) {
 
 ### Questions?
 - Check existing [documentation](./docs/)
-- Search [existing issues](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/issues)
-- Start a [discussion](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/discussions)
+- Search [existing issues](https://github.com/aliasfoxkde/Atheon-Scanner/issues)
+- Start a [discussion](https://github.com/aliasfoxkde/Atheon-Scanner/discussions)
 
 ### Found a Bug?
 - Search for existing issues first
@@ -304,6 +304,6 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-**Thank you for contributing to Atheon-GitHub-Scanner!**
+**Thank you for contributing to Atheon-Scanner!**
 
 Every contribution, no matter how small, helps improve the project. Whether it's bug reports, feature requests, code contributions, or documentation improvements, we appreciate your time and effort.

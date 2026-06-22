@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { useToast } from '../contexts/ToastContext'
 import { Skeleton, SkeletonStat } from '../components/Skeleton'
+import { loadRealScannerData } from '../services/realScannerData'
 
 const RECENT_KEY = 'atheon_recent_submissions';
 
@@ -10,7 +12,15 @@ export default function Submit() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [scanEstimate, setScanEstimate] = useState(null);
+  const [estimateVisible, setEstimateVisible] = useState(false);
+  const scanTimerRef = useRef(null);
+  const mountedRef = useRef(true);
   const toast = useToast();
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; if (scanTimerRef.current) clearTimeout(scanTimerRef.current) };
+  }, []);
 
   useEffect(() => {
     try {
@@ -27,6 +37,50 @@ export default function Submit() {
     try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch {}
   };
 
+  const computeScanEstimate = async (repoInput) => {
+    if (!repoInput || !repoInput.includes('/')) {
+      setScanEstimate(null);
+      setEstimateVisible(false);
+      return;
+    }
+    const controller = new AbortController();
+    try {
+      const data = await loadRealScannerData(controller.signal);
+      const found = (data.recent_scans || []).find(
+        (r) => r.name && r.name.toLowerCase() === repoInput.toLowerCase()
+      );
+      let deps, files;
+      if (found) {
+        deps = found.total_dependencies || 0;
+        files = found.total_files || 0;
+      } else {
+        // Estimate based on pattern
+        const parts = repoInput.split('/');
+        const org = parts[0] || '';
+        const name = parts[1] || '';
+        const isKnownOrg = org.length > 3 && org.length < 30;
+        const isShortName = name.length <= 5;
+        if (isShortName) {
+          deps = 20; files = 100;
+        } else if (isKnownOrg) {
+          deps = 100; files = 500;
+        } else {
+          deps = 50; files = 200;
+        }
+      }
+      let time;
+      if (deps < 50) time = '~30 seconds';
+      else if (deps < 200) time = '~2 minutes';
+      else if (deps < 500) time = '~5 minutes';
+      else time = '~10+ minutes';
+      setScanEstimate({ time, deps, files });
+      setEstimateVisible(true);
+    } catch {
+      setScanEstimate(null);
+      setEstimateVisible(false);
+    }
+  };
+
   const getFieldError = (field) => {
     if (field === 'repo') {
       if (!formData.repo) return 'Repository is required';
@@ -34,7 +88,11 @@ export default function Submit() {
     }
     if (field === 'url') {
       if (!formData.url) return 'URL is required';
-      try { new URL(formData.url); return null; } catch { return 'Please enter a valid URL'; }
+      try {
+        const u = new URL(formData.url);
+        if (!['http:', 'https:'].includes(u.protocol)) return 'Only http:// and https:// URLs are allowed';
+        return null;
+      } catch { return 'Please enter a valid URL'; }
     }
     return null;
   };
@@ -43,6 +101,7 @@ export default function Submit() {
 
   const handleBlur = (field) => {
     setTouched((t) => ({ ...t, [field]: true }));
+    if (field === 'repo') computeScanEstimate(formData.repo);
   };
 
   const validate = () => {
@@ -70,7 +129,8 @@ export default function Submit() {
     const target = formData.type === 'github' ? formData.repo : formData.url;
 
     // Simulate scan locally — we don't have a real backend for new scans
-    setTimeout(() => {
+    scanTimerRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
       const mockResult = {
         scanId: `sim-${Date.now()}`,
         status: 'queued',
@@ -207,6 +267,19 @@ export default function Submit() {
           )}
         </div>
 
+        {estimateVisible && scanEstimate && (
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 animate-pulse">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-gray-400 text-sm">Estimated scan time</span>
+              <span className="bg-blue-900 text-blue-300 text-xs px-2 py-0.5 rounded border border-blue-700">info</span>
+            </div>
+            <p className="text-white font-semibold text-lg">{scanEstimate.time}</p>
+            <p className="text-gray-400 text-xs mt-1">
+              Based on ~{scanEstimate.deps} dependencies · ~{scanEstimate.files.toLocaleString()} files
+            </p>
+          </div>
+        )}
+
         <div className="space-y-6">
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-4">How it works</h3>
@@ -277,6 +350,14 @@ export default function Submit() {
             </div>
           </dl>
           <p className="mt-4 text-sm text-gray-400">{result.message}</p>
+          <div className="mt-4 flex gap-3">
+            <Link
+              to="/reports"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+            >
+              Browse existing reports
+            </Link>
+          </div>
         </div>
       )}
     </div>

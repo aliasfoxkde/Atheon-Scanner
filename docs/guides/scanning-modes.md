@@ -1,6 +1,6 @@
 # Scanning Modes Guide
 
-Comprehensive guide to all available scanning modes in Atheon-GitHub-Scanner.
+Comprehensive guide to all available scanning modes in Atheon-Scanner.
 
 ## Overview
 
@@ -253,10 +253,10 @@ The scanner includes automation scripts for background processing:
 
 ```bash
 # Add to crontab for daily scanning
-0 2 * * * cd /path/to/Atheon-GitHub-Scanner && ./scripts/background-scanner.sh quick
+0 2 * * * cd /path/to/Atheon-Scanner && ./scripts/background-scanner.sh quick
 
 # Weekly full scan
-0 3 * * 0 cd /path/to/Atheon-GitHub-Scanner && ./scripts/background-scanner.sh full
+0 3 * * 0 cd /path/to/Atheon-Scanner && ./scripts/background-scanner.sh full
 ```
 
 ## Advanced Usage

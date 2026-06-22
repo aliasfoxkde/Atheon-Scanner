@@ -8,8 +8,8 @@ All three Atheon projects now have comprehensive automation and coordination pla
 
 ## 📁 Plan Locations & Structure
 
-### **1. Atheon GitHub Scanner** 📍
-**Location**: `/nas/Temp/repos/Atheon-GitHub-Scanner/docs/planning/`
+### **1. Atheon Scanner** 📍
+**Location**: `/nas/Temp/repos/Atheon-Scanner/docs/planning/`
 
 **Available Plans**:
 - `AUTOMATION_ENHANCEMENT_PLAN.md` - Daily automation and enhancement system
@@ -90,7 +90,7 @@ benchmark_schedule:
 ---
 
 ### **4. Unified Coordination Plan** 📍
-**Location**: `/nas/Temp/repos/Atheon-GitHub-Scanner/docs/planning/TRI_PROJECT_COORDINATION_PLAN.md`
+**Location**: `/nas/Temp/repos/Atheon-Scanner/docs/planning/TRI_PROJECT_COORDINATION_PLAN.md`
 
 **Key Features**:
 - Unified intelligence hub architecture
@@ -116,33 +116,33 @@ unified_schedule:
 ### **Daily Coordination Flow**
 
 ```
-00:00 UTC - GitHub Scanner: Daily research & repository scanning
+00:00 UTC - Atheon Scanner: Daily research & repository scanning
 01:00 UTC - Atheon Main: Pattern research & discovery
 02:00 UTC - Benchmark: Performance baseline generation
-03:00 UTC - GitHub Scanner: Pattern validation
+03:00 UTC - Atheon Scanner: Pattern validation
 04:00 UTC - ALL PROJECTS: First intelligence sharing round
-06:00 UTC - GitHub Scanner: Pattern validation
+06:00 UTC - Atheon Scanner: Pattern validation
 08:00 UTC - ALL PROJECTS: Coordinated validation
 12:00 UTC - ALL PROJECTS: Coordinated testing
 14:00 UTC - Benchmark: Trend analysis
 16:00 UTC - ALL PROJECTS: Second intelligence sharing round
 17:00 UTC - Benchmark: Optimization discovery
 20:00 UTC - ALL PROJECTS: Intelligence sharing & final preparation
-21:00 UTC - GitHub Scanner: Deployment
+21:00 UTC - Atheon Scanner: Deployment
 ```
 
 ### **Intelligence Flow Architecture**
 
 ```
-GitHub Scanner → Security Patterns → Atheon Main
+Atheon Scanner → Security Patterns → Atheon Main
                 ↓ Performance Data → Benchmark
                 ↓ Findings → Unified Intelligence Hub
 
-Atheon Main → Enhanced Patterns → GitHub Scanner
+Atheon Main → Enhanced Patterns → Atheon Scanner
             ↓ Performance Data → Benchmark
             ↓ Pattern Intelligence → Unified Hub
 
-Benchmark → Optimization Insights → GitHub Scanner
+Benchmark → Optimization Insights → Atheon Scanner
           ↓ Performance Baselines → Atheon Main
           ↓ Performance Intelligence → Unified Hub
 
@@ -156,7 +156,7 @@ Unified Hub → Correlated Intelligence → All Projects
 ## 🚀 Implementation Priority
 
 ### **Phase 1: Foundation Setup (Week 1-2)**
-1. **GitHub Scanner**: Set up daily automation infrastructure
+1. **Atheon Scanner**: Set up daily automation infrastructure
 2. **Atheon Main**: Implement pattern research automation
 3. **Benchmark**: Create automated baseline generation
 4. **Coordination**: Establish unified intelligence hub
@@ -184,7 +184,7 @@ Unified Hub → Correlated Intelligence → All Projects
 ## 📊 Success Metrics & Validation
 
 ### **Automation Coverage Targets**
-- GitHub Scanner: 95% automation coverage
+- Atheon Scanner: 95% automation coverage
 - Atheon Main: 90% automation coverage
 - Benchmark: 95% automation coverage
 - Cross-Project Coordination: 100% automation
@@ -293,8 +293,8 @@ When making significant changes:
 
 ### **Immediate Next Steps**
 
-1. **For GitHub Scanner Session**:
-   - Read `/nas/Temp/repos/Atheon-GitHub-Scanner/docs/planning/AUTOMATION_ENHANCEMENT_PLAN.md`
+1. **For Atheon Scanner Session**:
+   - Read `/nas/Temp/repos/Atheon-Scanner/docs/planning/AUTOMATION_ENHANCEMENT_PLAN.md`
    - Implement daily automation infrastructure (Phase 1)
    - Set up intelligence sharing with other projects
 
@@ -309,7 +309,7 @@ When making significant changes:
    - Set up performance intelligence sharing
 
 4. **For Coordination**:
-   - Read `/nas/Temp/repos/Atheon-GitHub-Scanner/docs/planning/TRI_PROJECT_COORDINATION_PLAN.md`
+   - Read `/nas/Temp/repos/Atheon-Scanner/docs/planning/TRI_PROJECT_COORDINATION_PLAN.md`
    - Implement unified intelligence hub
    - Set up coordinated deployment system
 

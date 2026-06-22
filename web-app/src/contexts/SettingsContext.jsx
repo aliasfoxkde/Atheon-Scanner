@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const STORAGE_KEY = 'atheon_settings';
 const DEFAULTS = {
   autoRefreshInterval: 30, // seconds; 0 = off
-  defaultPageSize: 50,
+  defaultPageSize: 10,
   density: 'comfortable', // compact | comfortable
   showStars: true,
   showDeps: true,

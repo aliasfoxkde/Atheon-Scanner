@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
+import pkg from '../../package.json';
 import { useToast } from '../contexts/ToastContext';
 
 const REFRESH_OPTIONS = [
@@ -154,9 +155,9 @@ export default function Settings() {
         <h2 className="text-lg font-semibold text-white mb-4">About</h2>
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <dt className="text-gray-400">App</dt>
-          <dd className="text-white">Atheon GitHub Scanner PWA</dd>
+          <dd className="text-white">{pkg.name.replace(/-/g, ' ').replace(/pwa/i, 'PWA')}</dd>
           <dt className="text-gray-400">Version</dt>
-          <dd className="text-white">1.0.0</dd>
+          <dd className="text-white">{pkg.version}</dd>
           <dt className="text-gray-400">Data source</dt>
           <dd className="text-white">Embedded + Cloudflare Worker</dd>
           <dt className="text-gray-400">Storage</dt>

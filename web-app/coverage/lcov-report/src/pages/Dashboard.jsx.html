@@ -1080,7 +1080,7 @@ const Dashboard = <span class="cstat-no" title="statement not covered" ><span cl
   const handleDownloadReport = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
     // Create a comprehensive report with all current data
     const reportData = <span class="cstat-no" title="statement not covered" >{</span>
-      title: 'Atheon GitHub Scanner - Dashboard Report',
+      title: 'Atheon Scanner - Dashboard Report',
       generatedAt: new Date().toISOString(),
       statistics: {
         totalRepositories: stats.totalRepos,
@@ -1115,8 +1115,8 @@ const Dashboard = <span class="cstat-no" title="statement not covered" ><span cl
 <span class="cstat-no" title="statement not covered" >    if (navigator.share) {</span>
 <span class="cstat-no" title="statement not covered" >      try {</span>
 <span class="cstat-no" title="statement not covered" >        await navigator.share({</span>
-          title: 'Atheon GitHub Scanner Dashboard',
-          text: `Check out the Atheon GitHub Scanner! ${stats.totalRepos} repositories scanned with ${stats.avgQualityScore.toFixed(1)} average quality score.`,
+          title: 'Atheon Scanner Dashboard',
+          text: `Check out the Atheon Scanner! ${stats.totalRepos} repositories scanned with ${stats.avgQualityScore.toFixed(1)} average quality score.`,
           url: url
         });
       } catch (error) {

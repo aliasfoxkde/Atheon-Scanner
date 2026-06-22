@@ -1,4 +1,4 @@
-# Implementation Summary - Atheon-GitHub-Scanner
+# Implementation Summary - Atheon-Scanner
 
 ## Project Status: ✅ WORKING PROTOTYPE
 
@@ -113,7 +113,7 @@
 ### Directory Structure
 
 ```
-Atheon-GitHub-Scanner/
+Atheon-Scanner/
 ├── cmd/scanner/main.go          # CLI entry point
 ├── pkg/
 │   ├── github/client.go         # GitHub API integration
@@ -405,7 +405,7 @@ The quality scoring algorithm uses:
 
 ## Conclusion
 
-The Atheon-GitHub-Scanner project has successfully achieved **functional prototype status** with:
+The Atheon-Scanner project has successfully achieved **functional prototype status** with:
 
 ✅ **Core scanning capabilities** - Working GitHub repository analysis
 ✅ **Pattern matching system** - Security and code quality detection

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -203,6 +202,11 @@ func (c *Client) GetRateLimit() *RateLimit {
 	return c.rateLimit
 }
 
+// GetToken returns the GitHub token (for secure git operations via environment)
+func (c *Client) GetToken() string {
+	return c.token
+}
+
 func (c *Client) updateRateLimit(resp *http.Response) {
 	if remaining := resp.Header.Get(rateLimitRemaining); remaining != "" {
 		fmt.Sscanf(remaining, "%d", &c.rateLimit.Remaining)
@@ -215,11 +219,8 @@ func (c *Client) updateRateLimit(resp *http.Response) {
 	}
 }
 
-// CloneURL returns the appropriate clone URL based on authentication
+// CloneURL returns the clone URL (without embedding token for security)
+// For authenticated clones, use CloneWithToken context instead
 func (c *Client) CloneURL(repo *Repository) string {
-	if c.token != "" {
-		// Return authenticated URL for private access if needed
-		return strings.Replace(repo.CloneURL, "https://", fmt.Sprintf("https://x-access-token:%s@", c.token), 1)
-	}
 	return repo.CloneURL
 }

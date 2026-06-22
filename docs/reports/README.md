@@ -309,7 +309,7 @@ This database uses patterns and concepts from the [Atheon](https://github.com/Ho
 
 ## License
 
-All reports are part of the Atheon-GitHub-Scanner project and licensed under the MIT License.
+All reports are part of the Atheon-Scanner project and licensed under the MIT License.
 
 ---
 

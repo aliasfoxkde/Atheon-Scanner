@@ -1,4 +1,4 @@
-const SCANNER_VERSION = 'dev'
+const SCANNER_VERSION = '1.0.0'
 const BUILD_DATE = '2026-06-21'
 const TOTAL_PATTERNS = 55
 const CATEGORIES = [
@@ -24,14 +24,10 @@ const LIMITATIONS = [
 ]
 
 const RESOURCES = [
-  { label: 'Atheon Enhanced CLI', url: '#', desc: 'The underlying scanner engine — run locally against any GitHub repository' },
-  { label: 'Atheon Benchmark', url: '#', desc: 'Performance benchmarking suite and methodology for scanner evaluation' },
+  { label: 'Atheon Enhanced CLI', url: 'https://github.com/HoraDomu/Atheon', desc: 'The underlying scanner engine — run locally against any GitHub repository' },
+  { label: 'Atheon on GitHub', url: 'https://github.com/aliasfoxkde/Atheon-Scanner', desc: 'This web scanner project — fork and deploy your own instance' },
   { label: 'GitHub REST API', url: 'https://docs.github.com/en/rest', desc: 'Package metadata, stars, forks, topics, and open issues' },
   { label: 'npm Registry API', url: 'https://registry.npmjs.org/', desc: 'Dependency metadata and package information' },
-]
-
-const PATTERN_CATALOG = [
-  ...CATEGORIES.map(cat => cat.name),
 ]
 
 export default function About() {
@@ -87,7 +83,7 @@ export default function About() {
             <h3 className="text-white font-semibold text-sm">Scanner version is pre-release</h3>
             <p className="text-xs text-gray-400 mt-1">
               v{SCANNER_VERSION} is a development build. Pattern definitions, severity assignments, and scan methodology
-              may change between releases. Check <a href="#" className="text-blue-400 hover:underline">the changelog</a> for
+              may change between releases. See <a href="https://github.com/aliasfoxkde/Atheon-Scanner/releases" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">the changelog</a> for
               the latest updates. Production deployments should pin to a tagged release.
             </p>
           </div>

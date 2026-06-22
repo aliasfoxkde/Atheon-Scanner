@@ -125,16 +125,47 @@ func (s *Scanner) ScanRepository(owner, name string) (*ScanResult, error) {
 	return result, nil
 }
 
+// sanitizePath ensures a path stays within the base directory (prevents path traversal)
+func sanitizePath(path string, baseDir string) (string, error) {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path: %w", err)
+	}
+	absBase, err := filepath.Abs(baseDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute base directory: %w", err)
+	}
+	if !strings.HasPrefix(absPath, absBase+string(filepath.Separator)) && absPath != absBase {
+		return "", fmt.Errorf("path traversal detected: %s is outside %s", path, baseDir)
+	}
+	return absPath, nil
+}
+
 // cloneRepository clones a repository to a local directory
 func (s *Scanner) cloneRepository(repo *github.Repository) (string, error) {
-	repoDir := filepath.Join(s.workDir, strings.ReplaceAll(repo.FullName, "/", "_"))
+	// Sanitize the repo name to prevent path traversal
+	safeName := strings.ReplaceAll(repo.FullName, "/", "_")
+	safeName = strings.ReplaceAll(safeName, "..", "")
+	repoDir := filepath.Join(s.workDir, safeName)
+
+	// Validate the final path stays within workDir
+	if _, err := sanitizePath(repoDir, s.workDir); err != nil {
+		return "", fmt.Errorf("invalid repository path: %w", err)
+	}
 
 	// Remove existing directory if it exists
 	os.RemoveAll(repoDir)
 
-	// Clone the repository
+	// Clone using token via environment variable instead of embedding in URL
 	cmd := exec.CommandContext(s.ctx, "git", "clone", "--depth", "1", repo.CloneURL, repoDir)
 	cmd.Dir = s.workDir
+	cmd.Env = append(os.Environ(),
+		"GIT_TERMINAL_PROMPT=0",
+	)
+	// Add token to environment if available
+	if token := s.githubClient.GetToken(); token != "" {
+		cmd.Env = append(cmd.Env, "GITHUB_TOKEN="+token)
+	}
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

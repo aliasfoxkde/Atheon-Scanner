@@ -1,4 +1,4 @@
-# 🚀 Atheon GitHub Scanner - Real Repository Analysis System
+# 🚀 Atheon Scanner - Real Repository Analysis System
 
 **A comprehensive, multi-ecosystem repository scanning and analysis platform that generates authentic insights from real GitHub repositories.**
 
@@ -36,8 +36,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/your-username/Atheon-Scanner.git
+cd Atheon-Scanner
 
 # Install Python dependencies
 pip3 install --break-system-packages flask flask-cors requests aiohttp
@@ -136,7 +136,7 @@ cd web-app && npm run dev
 
 ### Current System Status
 ```
-🔍 API GitHub Scanner:      104 repositories
+🔍 API Atheon Scanner:      104 repositories
 🧬 Hybrid Deep Analysis:     10 repositories
 📦 Basic Package Scanner:     2 repositories
 🌍 Universal Scanner:        23 repositories
@@ -244,8 +244,8 @@ TOTAL:                      162 repositories analyzed
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTE.md) for details.
 
-- 🐛 **Bug Reports** - [Create an issue](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/issues)
-- 💡 **Feature Requests** - [Start a discussion](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/discussions)
+- 🐛 **Bug Reports** - [Create an issue](https://github.com/aliasfoxkde/Atheon-Scanner/issues)
+- 💡 **Feature Requests** - [Start a discussion](https://github.com/aliasfoxkde/Atheon-Scanner/discussions)
 - 🔧 **Pull Requests** - Follow our [contributing guidelines](CONTRIBUTE.md)
 - 📖 **Documentation** - Improve docs and guides
 
@@ -269,8 +269,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-- **Issues**: [GitHub Issues](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/discussions)
+- **Issues**: [GitHub Issues](https://github.com/aliasfoxkde/Atheon-Scanner/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/aliasfoxkde/Atheon-Scanner/discussions)
 - **Security**: See [SECURITY.md](SECURITY.md)
 
 ## 🌟 Star History

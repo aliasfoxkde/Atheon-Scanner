@@ -1,7 +1,7 @@
 {
-  "name": "atheon-github-scanner-pwa",
+  "name": "atheon-Atheon-scanner-pwa",
   "version": "1.0.0",
-  "description": "Progressive Web App for Atheon GitHub Scanner",
+  "description": "Progressive Web App for Atheon Scanner",
   "private": true,
   "type": "module",
   "scripts": {

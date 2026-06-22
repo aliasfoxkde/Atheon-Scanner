@@ -1,1 +1,24 @@
 bin/
+
+# Temporary/artifact files
+*.tgz
+*.tar.gz
+*.zip
+*.log
+
+# AI tooling (not project source)
+CLAUDE.md
+.claude/
+
+# Local environment overrides
+.env
+.env.local
+.env.*.local
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/

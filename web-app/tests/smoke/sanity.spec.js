@@ -13,7 +13,7 @@ test.describe('Smoke Tests - Critical Functionality', () => {
 
   test('Application loads successfully', async ({ page }) => {
     // CRITICAL: App must load
-    await expect(page).toHaveTitle(/Atheon GitHub Scanner/);
+    await expect(page).toHaveTitle(/Atheon Scanner/);
     await page.waitForLoadState('networkidle');
   });
 

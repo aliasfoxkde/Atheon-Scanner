@@ -1,6 +1,6 @@
 {
   "performance_data": [
-    "ResearchFinding(category=<ResearchCategory.PERFORMANCE: 'performance'>, source='performance_monitoring', title='Performance Insight: Performance Optimization Opportunity', description='Identified opportunities for performance improvement', severity='medium', confidence=0.7, data={'insight': {'name': 'Performance Optimization Opportunity', 'description': 'Identified opportunities for performance improvement', 'severity': 'medium', 'confidence': 0.7, 'complexity': 'medium'}}, timestamp='2026-06-21T00:00:18.081510', actionable=True, implementation_complexity='medium')"
+    "ResearchFinding(category=<ResearchCategory.PERFORMANCE: 'performance'>, source='performance_monitoring', title='Performance Insight: Performance Optimization Opportunity', description='Identified opportunities for performance improvement', severity='medium', confidence=0.7, data={'insight': {'name': 'Performance Optimization Opportunity', 'description': 'Identified opportunities for performance improvement', 'severity': 'medium', 'confidence': 0.7, 'complexity': 'medium'}}, timestamp='2026-06-22T00:00:07.802409', actionable=True, implementation_complexity='medium')"
   ],
   "quality_metrics": {
     "pattern_accuracy": 0.85,

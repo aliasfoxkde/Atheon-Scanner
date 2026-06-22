@@ -1,12 +1,55 @@
-// Cloudflare Worker API for Atheon GitHub Scanner
+// Cloudflare Worker API for Atheon Scanner
 // Serves real scanner data to the deployed webapp
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Max-Age': '86400',
-};
+// Allowed origins - configure via WORKER_ORIGINS env var (comma-separated)
+const ALLOWED_ORIGINS = (env.WORKER_ORIGINS || 'https://your-dashboard.example.com').split(',');
+
+function getCorsHeaders(request) {
+  const origin = request.headers.get('Origin') || '';
+  const isAllowed = ALLOWED_ORIGINS.some(allowed =>
+    allowed.trim() === origin || allowed.trim() === '*'
+  );
+
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0] || '',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
+// Simple in-memory rate limiting (use KV for production)
+const rateLimitStore = new Map();
+const RATE_LIMIT = 100; // requests per minute
+const RATE_WINDOW = 60000; // 1 minute in ms
+
+function checkRateLimit(clientId) {
+  const now = Date.now();
+  const record = rateLimitStore.get(clientId) || { count: 0, resetAt: now + RATE_WINDOW };
+
+  if (now > record.resetAt) {
+    record.count = 0;
+    record.resetAt = now + RATE_WINDOW;
+  }
+
+  record.count++;
+  rateLimitStore.set(clientId, record);
+
+  return record.count <= RATE_LIMIT;
+}
+
+// Auth check for protected endpoints
+function requireAuth(request) {
+  const authHeader = request.headers.get('Authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const expectedToken = env.API_TOKEN || '';
+
+  if (!expectedToken) {
+    return { authorized: true, warning: 'API_TOKEN not configured' };
+  }
+
+  return { authorized: token === expectedToken };
+}
 
 // Embedded real scanner data (2,209 packages from 23 JSONL files)
 const SCANNER_DATA = {
@@ -69,22 +112,22 @@ const SCANNER_DATA = {
   last_updated: '2026-06-19T21:00:00Z',
 };
 
-function jsonResponse(data, status = 200) {
+function jsonResponse(request, data, status = 200) {
   return new Response(JSON.stringify({ success: true, data }), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      ...CORS_HEADERS,
+      ...getCorsHeaders(request),
     },
   });
 }
 
-function errorResponse(message, status = 500) {
+function errorResponse(request, message, status = 500) {
   return new Response(JSON.stringify({ success: false, error: message }), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      ...CORS_HEADERS,
+      ...getCorsHeaders(request),
     },
   });
 }
@@ -92,7 +135,13 @@ function errorResponse(message, status = 500) {
 async function handleRequest(request) {
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: CORS_HEADERS });
+    return new Response(null, { headers: getCorsHeaders(request) });
+  }
+
+  // Apply rate limiting based on client IP
+  const clientId = request.headers.get('CF-Connecting-IP') || 'unknown';
+  if (!checkRateLimit(clientId)) {
+    return errorResponse(request, 'Rate limit exceeded', 429);
   }
 
   const url = new URL(request.url);
@@ -101,12 +150,12 @@ async function handleRequest(request) {
   try {
     // Stats endpoint
     if (path === '/api/stats' || path === '/api') {
-      return jsonResponse(SCANNER_DATA);
+      return jsonResponse(request, SCANNER_DATA);
     }
 
     // Health endpoint
     if (path === '/api/health') {
-      return jsonResponse({
+      return jsonResponse(request, {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         data_files_found: SCANNER_DATA.data_files_count,
@@ -130,7 +179,7 @@ async function handleRequest(request) {
       const pages = Math.ceil(total / limit);
       const start = (page - 1) * limit;
 
-      return jsonResponse({
+      return jsonResponse(request, {
         repositories: repos.slice(start, start + limit),
         total,
         page,
@@ -141,7 +190,7 @@ async function handleRequest(request) {
 
     // Languages endpoint
     if (path === '/api/languages') {
-      return jsonResponse({
+      return jsonResponse(request, {
         languages: SCANNER_DATA.language_distribution,
         top_languages: SCANNER_DATA.top_languages,
       });
@@ -149,7 +198,7 @@ async function handleRequest(request) {
 
     // Patterns endpoint
     if (path === '/api/patterns') {
-      return jsonResponse({
+      return jsonResponse(request, {
         dependency_analysis: SCANNER_DATA.dependency_stats,
         file_analysis: SCANNER_DATA.file_stats,
         quality_analysis: SCANNER_DATA.quality_stats,
@@ -165,21 +214,25 @@ async function handleRequest(request) {
           average_quality_score: SCANNER_DATA.average_quality_score,
         };
       }
-      return jsonResponse({
+      return jsonResponse(request, {
         ecosystem_comparison,
         total_ecosystems: Object.keys(ecosystem_comparison).length,
       });
     }
 
-    // Refresh endpoint
+    // Refresh endpoint - requires authentication
     if (path === '/api/refresh' && request.method === 'POST') {
-      return jsonResponse(SCANNER_DATA);
+      const auth = requireAuth(request);
+      if (!auth.authorized) {
+        return errorResponse(request, 'Unauthorized', 401);
+      }
+      return jsonResponse(request, SCANNER_DATA);
     }
 
     // Default: return stats
-    return jsonResponse(SCANNER_DATA);
+    return jsonResponse(request, SCANNER_DATA);
   } catch (err) {
-    return errorResponse(err.message);
+    return errorResponse(request, err.message);
   }
 }
 

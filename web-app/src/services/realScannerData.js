@@ -51,7 +51,7 @@ export const loadRealScannerData = async (signal) => {
  * Get paginated list of repositories from embedded data
  * @param {AbortSignal} [signal] - optional abort signal
  */
-export const getAllRepositories = async (page = 1, limit = 50, language = null, tier = null, signal) => {
+export const getAllRepositories = async (page = 1, limit = 50, language = null, tier = null, signal, search = '', minScore = '') => {
   try {
     const data = await loadRealScannerData(signal); // uses cached fetch, respects signal
     let repos = data.recent_scans || [];
@@ -61,6 +61,20 @@ export const getAllRepositories = async (page = 1, limit = 50, language = null, 
     }
     if (tier) {
       repos = repos.filter(r => r.tier === tier);
+    }
+    // Apply search + minScore server-side (before pagination) so all pages are searchable
+    if (search) {
+      const q = search.toLowerCase();
+      repos = repos.filter(r =>
+        (r.name || '').toLowerCase().includes(q) ||
+        (r.description || '').toLowerCase().includes(q) ||
+        (r.language || '').toLowerCase().includes(q) ||
+        ((r.topics || []).some((t) => t.toLowerCase().includes(q)))
+      );
+    }
+    if (minScore) {
+      const min = Number(minScore);
+      if (!Number.isNaN(min)) repos = repos.filter(r => (r.quality_score || 0) >= min);
     }
 
     const total = repos.length;

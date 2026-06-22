@@ -1,16 +1,20 @@
-# Plan: Fix Dark Mode, Charts, and Real Data
+# Plan
 
-## Phase 1: Fix Tailwind darkMode
-- Add `darkMode: 'class'` to `web-app/tailwind.config.js`
+## Current Phase: Feature Expansion
 
-## Phase 2: Rebuild embedded-data.json
-- Load all JSONL sources (mass, local, comprehensive, hybrid, incremental)
-- Deduplicate by full_name, keeping richest record
-- Sort by stars descending
-- Include all real metadata fields
-- Use actual security_issues severity counts for tier computation
+### In Progress
 
-## Phase 3: Replace SecurityRadarChart
-- Replace fake derived metrics with real severity counts
-- Show actual security_issue patterns (XSS, Injection, etc.)
-- Display real counts per severity level
+1. **Radar Chart** - Add Repository Health Radar to Dashboard showing multi-dimensional repo metrics
+2. **PDF Export** - Add print/PDF export for report detail pages
+3. **Trend Indicators** - Show score change arrows on Reports rows
+4. **Smart Search** - Fuzzy search with highlighted matches
+
+### Verification
+
+After each feature:
+1. Run full test suite (target: 140+ tests)
+2. Build succeeds
+3. Deploy to Cloudflare Pages
+4. Manual smoke test of new feature
+
+See docs/PLAN.md for full project plan.

@@ -80,3 +80,17 @@ export function SkeletonCard() {
 export function SkeletonChart({ height = 200 }) {
   return <div className={`${baseShimmer} rounded`} style={{ height }} />;
 }
+
+export function SkeletonDonut({ size = 160 }) {
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <div className={`${baseShimmer} rounded-full`} style={{ width: size, height: size }} />
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ width: size * 0.6, height: size * 0.6 }}
+      >
+        <div className={`${baseShimmer} rounded-full`} style={{ width: size * 0.6, height: size * 0.6 }} />
+      </div>
+    </div>
+  );
+}

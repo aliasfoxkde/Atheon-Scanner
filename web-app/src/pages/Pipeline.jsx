@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loadRealScannerData } from '../services/realScannerData'
-import { Skeleton } from '../components/Skeleton'
+import { Skeleton, SkeletonDonut } from '../components/Skeleton'
 import { DonutChart } from '../components/Charts'
 
 const ATHEON_VERSION = 'dev'
@@ -223,6 +223,19 @@ export default function Pipeline() {
                             <div className="w-2.5 h-2.5 rounded-full" style={{ background: SEV_COLORS[sev] || '#888' }} />
                             <span className="text-xs text-gray-300 capitalize flex-1">{sev}</span>
                             <span className="text-sm font-bold text-white">{count.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : loading ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <SkeletonDonut size={180} />
+                      <div className="grid grid-cols-2 gap-2 w-full">
+                        {['critical','high','medium','low'].map(s => (
+                          <div key={s} className="flex items-center gap-2 bg-gray-900 rounded-lg p-3">
+                            <div className={`${s === 'critical' ? 'bg-red-500' : s === 'high' ? 'bg-orange-500' : s === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'} w-2.5 h-2.5 rounded-full animate-pulse`} />
+                            <span className="text-xs text-gray-300 capitalize flex-1">{s}</span>
+                            <div className="h-4 w-8 bg-gray-700 rounded animate-pulse" />
                           </div>
                         ))}
                       </div>

@@ -1,4 +1,4 @@
-# Atheon GitHub Scanner - PWA Web Application Architecture
+# Atheon Scanner - PWA Web Application Architecture
 
 ## Overview
 Progressive Web App (PWA) for cloud-based code security and quality analysis, deployable on Cloudflare Pages/Workers with GitHub integration and real-time scanning capabilities.

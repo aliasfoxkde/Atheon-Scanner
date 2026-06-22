@@ -2,7 +2,7 @@
 
 ## 🎯 Vision
 
-Create a symbiotic ecosystem where Atheon, Atheon-GitHub-Scanner, and Atheon-Benchmark continuously enhance each other through coordinated daily automation, shared intelligence, and collaborative improvement.
+Create a symbiotic ecosystem where Atheon, Atheon-Scanner, and Atheon-Benchmark continuously enhance each other through coordinated daily automation, shared intelligence, and collaborative improvement.
 
 ## 🔄 Tri-Project Coordination Architecture
 
@@ -124,7 +124,7 @@ class UnifiedIntelligenceHub:
             'quality': ['accuracy_metrics', 'false_positive_rates', 'detection_capabilities']
         })
 
-        # Collect from GitHub Scanner (scanning intelligence)
+        # Collect from Atheon Scanner (scanning intelligence)
         intelligence['scanner'] = await self.projects['scanner'].collect_intelligence({
             'security': ['vulnerability_findings', 'security_patterns', 'threat_discoveries'],
             'quality': ['code_quality_patterns', 'best_practices', 'anti_patterns'],

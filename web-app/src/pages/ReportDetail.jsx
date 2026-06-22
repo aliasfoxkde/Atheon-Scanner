@@ -47,6 +47,7 @@ export default function ReportDetail() {
   const toast = useToast()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [activeTab, setActiveTab] = useState('summary')
   const [findingsFilter, setFindingsFilter] = useState('all')
 
@@ -54,25 +55,24 @@ export default function ReportDetail() {
     window.scrollTo(0, 0)
   }, [activeTab])
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      try {
-        const data = await loadRealScannerData()
-        const found = data.recent_scans?.find(r => r.id === id || r.name === id)
-        if (found) {
-          setReport(found)
-        } else {
-          // Try URL-decoded
-          const decoded = decodeURIComponent(id || '')
-          const found2 = data.recent_scans?.find(r => r.id === decoded || r.name === decoded)
-          setReport(found2 || null)
-        }
-      } catch { setReport(null) }
-      setLoading(false)
-    }
-    load()
-  }, [id])
+  const load = async () => {
+    setLoading(true)
+    setLoadError(false)
+    try {
+      const data = await loadRealScannerData()
+      const found = data.recent_scans?.find(r => r.id === id || r.name === id)
+      if (found) {
+        setReport(found)
+      } else {
+        const decoded = decodeURIComponent(id || '')
+        const found2 = data.recent_scans?.find(r => r.id === decoded || r.name === decoded)
+        setReport(found2 || null)
+      }
+    } catch { setLoadError(true) }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [id])
 
   const handleShare = async () => {
     try {
@@ -100,9 +100,12 @@ export default function ReportDetail() {
   if (!report) return (
     <div className="flex flex-col items-center justify-center min-h-64 text-center">
       <div className="text-6xl mb-4">🔍</div>
-      <h2 className="text-xl font-bold text-white mb-2">Report not found</h2>
-      <p className="text-gray-400 mb-4">No report matches "{id}"</p>
-      <Link to="/reports" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">Back to Reports</Link>
+      <h2 className="text-xl font-bold text-white mb-2">{loadError ? 'Failed to load report' : 'Report not found'}</h2>
+      <p className="text-gray-400 mb-4">{loadError ? 'Something went wrong while fetching the report data.' : `No report matches "${id}"`}</p>
+      <div className="flex gap-3">
+        {loadError && <button onClick={load} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">Retry</button>}
+        <Link to="/reports" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm">Back to Reports</Link>
+      </div>
     </div>
   )
 
@@ -377,7 +380,11 @@ export default function ReportDetail() {
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                           findingsFilter === sev
                             ? sev === 'all' ? 'bg-blue-600 text-white border-blue-600'
-                            : `${SEV_BG[sev]} text-${sev === 'critical' ? 'red' : sev === 'high' ? 'orange' : sev === 'medium' ? 'yellow' : sev === 'low' ? 'blue' : 'gray'}-400 border-${sev === 'critical' ? 'red' : sev === 'high' ? 'orange' : sev === 'medium' ? 'yellow' : sev === 'low' ? 'blue' : 'gray'}-500/30`
+                            : sev === 'critical' ? 'bg-red-900/50 text-red-400 border-red-500/30'
+                            : sev === 'high' ? 'bg-orange-900/50 text-orange-400 border-orange-500/30'
+                            : sev === 'medium' ? 'bg-yellow-900/50 text-yellow-400 border-yellow-500/30'
+                            : sev === 'low' ? 'bg-blue-900/50 text-blue-400 border-blue-500/30'
+                            : 'bg-gray-700 text-gray-400 border-gray-500/30'
                             : 'bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700'
                         }`}>
                         {sev.charAt(0).toUpperCase() + sev.slice(1)}{sev !== 'all' ? ` (${secCounts[sev] || 0})` : ''}
@@ -393,7 +400,13 @@ export default function ReportDetail() {
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${SEV_BG[sev]} text-${sev === 'critical' ? 'red' : sev === 'high' ? 'orange' : sev === 'medium' ? 'yellow' : sev === 'low' ? 'blue' : 'gray'}-400`}>
+                                <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                                  sev === 'critical' ? 'bg-red-900/60 text-red-300'
+                                  : sev === 'high' ? 'bg-orange-900/60 text-orange-300'
+                                  : sev === 'medium' ? 'bg-yellow-900/60 text-yellow-300'
+                                  : sev === 'low' ? 'bg-blue-900/60 text-blue-300'
+                                  : 'bg-gray-700 text-gray-300'
+                                }`}>
                                   {sev}
                                 </span>
                                 {f.confidence != null && (

@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         lang: 'en',
         dir: 'ltr',
-        name: 'Atheon GitHub Scanner',
+        name: 'Atheon Scanner',
         short_name: 'Atheon Scanner',
         description: 'Automated GitHub repository scanning and quality analysis',
         theme_color: '#4f46e5',

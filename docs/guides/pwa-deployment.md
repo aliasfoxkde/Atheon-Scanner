@@ -1,6 +1,6 @@
 # PWA Deployment Guide
 
-Complete guide for deploying the Atheon-GitHub-Scanner PWA to Cloudflare Pages and Workers.
+Complete guide for deploying the Atheon-Scanner PWA to Cloudflare Pages and Workers.
 
 ## Table of Contents
 
@@ -121,7 +121,7 @@ Create `public/manifest.json`:
 
 ```json
 {
-  "name": "Atheon GitHub Scanner",
+  "name": "Atheon Scanner",
   "short_name": "Atheon Scanner",
   "description": "Automated GitHub repository scanning and quality analysis",
   "start_url": "/",
@@ -702,7 +702,7 @@ For deployment issues:
 - [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages)
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers)
 - [Wrangler Documentation](https://developers.cloudflare.com/workers/wrangler/)
-- [Project Issues](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/issues)
+- [Project Issues](https://github.com/aliasfoxkde/Atheon-Scanner/issues)
 
 ---
 

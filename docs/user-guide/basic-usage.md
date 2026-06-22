@@ -1,6 +1,6 @@
 # Basic Usage Guide
 
-This guide covers the most common usage scenarios for the Atheon-GitHub-Scanner.
+This guide covers the most common usage scenarios for the Atheon-Scanner.
 
 ## Table of Contents
 
@@ -16,8 +16,8 @@ This guide covers the most common usage scenarios for the Atheon-GitHub-Scanner.
 
 ```bash
 # Clone the repository
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 
 # Build the scanner
 go build -o scanner cmd/scanner/main.go
@@ -296,7 +296,7 @@ export GITHUB_TOKEN="your_token_here"
 ### Getting Help
 
 - **Documentation**: Check [./docs](../docs/) for detailed guides
-- **Issues**: [GitHub Issues](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/issues)
+- **Issues**: [GitHub Issues](https://github.com/aliasfoxkde/Atheon-Scanner/issues)
 - **Security**: See [SECURITY.md](../../SECURITY.md)
 
 ## Advanced Usage

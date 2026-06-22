@@ -12,7 +12,7 @@ echo "====================================================="
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 REPOS=(
-    "/nas/Temp/repos/Atheon-GitHub-Scanner"
+    "/nas/Temp/repos/Atheon-Scanner"
     "/nas/Temp/repos/Atheon-Enhanced"
     "/nas/Temp/repos/Atheon-Benchmark"
 )
@@ -259,7 +259,7 @@ After=network.target atheon-daemon.service
 [Service]
 Type=simple
 User=mkinney
-WorkingDirectory=/nas/Temp/repos/Atheon-GitHub-Scanner/agents
+WorkingDirectory=/nas/Temp/repos/Atheon-Scanner/agents
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"
 ExecStart=/usr/bin/python3 cross_repo_integrator.py
 Restart=always
@@ -291,16 +291,16 @@ setup_scheduling() {
     cat > /tmp/atheon_automation_cron << 'EOF'
 # Atheon Automation Schedule
 # Daily tasks at 2 AM
-0 2 * * * cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents && ./run_daily_cycle.sh >> /var/log/atheon_daily.log 2>&1
+0 2 * * * cd /nas/Temp/repos/Atheon-Scanner/agents && ./run_daily_cycle.sh >> /var/log/atheon_daily.log 2>&1
 
 # Improvement cycles every 6 hours
-0 */6 * * * cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents && ./run_improvement_cycle.sh >> /var/log/atheon_improvement.log 2>&1
+0 */6 * * * cd /nas/Temp/repos/Atheon-Scanner/agents && ./run_improvement_cycle.sh >> /var/log/atheon_improvement.log 2>&1
 
 # Cross-repository coordination at 3 AM
-0 3 * * * cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents && python3 cross_repo_integrator.py >> /var/log/atheon_coordination.log 2>&1
+0 3 * * * cd /nas/Temp/repos/Atheon-Scanner/agents && python3 cross_repo_integrator.py >> /var/log/atheon_coordination.log 2>&1
 
 # Self-improvement analysis at 9 AM, 3 PM, 9 PM
-0 9,15,21 * * * cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents && python3 self_improvement_agent.py >> /var/log/atheon_self_improvement.log 2>&1
+0 9,15,21 * * * cd /nas/Temp/repos/Atheon-Scanner/agents && python3 self_improvement_agent.py >> /var/log/atheon_self_improvement.log 2>&1
 EOF
 
     if [ "$EUID" -eq 0 ]; then

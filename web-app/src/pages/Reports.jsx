@@ -14,8 +14,6 @@ const TIER_SCORE = { A: 1, B: 2, C: 3, D: 4, F: 5 };
 export default function Reports() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [selectedReport, setSelectedReport] = useState(null)
-  const [showModal, setShowModal] = useState(false)
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -36,6 +34,16 @@ export default function Reports() {
     tier: searchParams.get('tier') || '',
     minScore: searchParams.get('minScore') || '',
     search: searchParams.get('q') || '',
+    bookmarks: false,
+  })
+
+  // Load bookmarks from localStorage
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('atheon_bookmarks') || '[]')
+    } catch {
+      return []
+    }
   })
   const [sort, setSort] = useState({ column: null, dir: 'asc' })
   const [pagination, setPagination] = useState({
@@ -77,6 +85,13 @@ export default function Reports() {
     setPagination((p) => ({ ...p, perPage: settings.defaultPageSize, page: 1 }))
   }, [settings.defaultPageSize])
 
+  // Open compare mode when ?compare=true is in URL
+  useEffect(() => {
+    if (searchParams.get('compare') === 'true') {
+      setShowCompare(true)
+    }
+  }, [searchParams])
+
   const fetchReports = async (signal) => {
     try {
       setLoading(true)
@@ -86,25 +101,13 @@ export default function Reports() {
         pagination.perPage,
         filters.language,
         filters.tier,
-        signal
+        signal,
+        filters.search,
+        filters.minScore
       )
 
       if (response && response.repositories) {
-        let repos = response.repositories
-        if (filters.search) {
-          const q = filters.search.toLowerCase()
-          repos = repos.filter((r) =>
-            (r.name || '').toLowerCase().includes(q) ||
-            (r.description || '').toLowerCase().includes(q) ||
-            (r.language || '').toLowerCase().includes(q) ||
-            ((r.topics || []).some((t) => t.toLowerCase().includes(q)))
-          )
-        }
-        if (filters.minScore) {
-          const min = Number(filters.minScore)
-          if (!Number.isNaN(min)) repos = repos.filter((r) => (r.quality_score || 0) >= min)
-        }
-        setReports(repos)
+        setReports(response.repositories)
         setPagination((p) => ({
           ...p,
           total: response.total || 0,
@@ -125,21 +128,34 @@ export default function Reports() {
   }
 
   const sortedReports = useMemo(() => {
-    if (!sort.column) return reports
+    let result = reports
+    // Filter by bookmarks when the bookmarks filter is active
+    if (filters.bookmarks) {
+      result = result.filter((r) => bookmarks.includes(r.id))
+    }
+    if (!sort.column) return result
     const { column, dir } = sort
     const mult = dir === 'asc' ? 1 : -1
-    return [...reports].sort((a, b) => {
+    return [...result].sort((a, b) => {
       const av = a[column]
       const bv = b[column]
       if (column === 'tier') return mult * ((TIER_SCORE[av] ?? 9) - (TIER_SCORE[bv] ?? 9))
       if (typeof av === 'number' && typeof bv === 'number') return mult * (av - bv)
       return mult * String(av || '').localeCompare(String(bv || ''))
     })
-  }, [reports, sort])
+  }, [reports, sort, filters.bookmarks, bookmarks])
+
+  // Compute filtered total accounting for bookmarks filter
+  const filteredTotal = useMemo(() => {
+    if (filters.bookmarks) {
+      return reports.filter((r) => bookmarks.includes(r.id)).length
+    }
+    return pagination.total
+  }, [filters.bookmarks, reports, bookmarks, pagination.total])
 
   // Compute table column count based on active settings
   const tableColCount = useMemo(() => {
-    return 5 + (settings.showStars !== false ? 1 : 0) + (settings.showDeps !== false ? 1 : 0) + (settings.showFiles !== false ? 1 : 0) + 1
+    return 6 + (settings.showStars !== false ? 1 : 0) + (settings.showDeps !== false ? 1 : 0) + (settings.showFiles !== false ? 1 : 0) + 1
   }, [settings.showStars, settings.showDeps, settings.showFiles])
 
   const handleSort = (column) => {
@@ -164,11 +180,28 @@ export default function Reports() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearFilters = () => {
-    setFilters({ language: '', tier: '', minScore: '', search: '' })
+    setFilters({ language: '', tier: '', minScore: '', search: '', bookmarks: false })
     setPagination((p) => ({ ...p, page: 1 }))
     setSearchParams(new URLSearchParams(), { replace: true })
     toast.info('Filters cleared')
   }
+
+  // Save bookmarks to localStorage
+  const saveBookmarks = useCallback((ids) => {
+    try {
+      localStorage.setItem('atheon_bookmarks', JSON.stringify(ids))
+    } catch {}
+  }, [])
+
+  const toggleBookmark = useCallback((reportId) => {
+    setBookmarks((prev) => {
+      const next = prev.includes(reportId)
+        ? prev.filter((id) => id !== reportId)
+        : [...prev, reportId]
+      saveBookmarks(next)
+      return next
+    })
+  }, [saveBookmarks])
 
   const handleReportClick = (report) => {
     navigate(`/reports/${encodeURIComponent(report.id || report.name)}`)
@@ -215,18 +248,46 @@ export default function Reports() {
     }
   }
 
-  const exportData = (format) => {
+  // Prevent CSV formula injection: prefix cells starting with =, +, -, @, \t with '
+  const safeCsvCell = (val) => {
+    const s = String(val ?? '');
+    if (/^[=+\-@\t\r]/.test(s)) return "'" + s;
+    return s;
+  }
+
+  const exportData = (format, allFiltered = false) => {
+    const headers = ['name', 'language', 'quality_score', 'tier', 'stars', 'total_dependencies', 'total_files', 'scan_method', 'scan_date']
+
+    if (allFiltered) {
+      // Fetch ALL filtered records across all pages for export
+      setLoading(true)
+      getAllRepositories(1, pagination.total, filters.language, filters.tier, null, filters.search, filters.minScore)
+        .then((response) => {
+          setLoading(false)
+          const allRepos = response.repositories || []
+          if (allRepos.length === 0) { toast.error('No data to export'); return }
+          if (format === 'csv') {
+            const lines = [headers.join(','), ...allRepos.map((r) => headers.map((h) => safeCsvCell(r[h])).join(','))]
+            download(`atheon-reports-filtered.csv`, '﻿' + lines.join('\n'), 'text/csv') // BOM for Excel UTF-8
+          } else {
+            download(`atheon-reports-filtered.json`, JSON.stringify({ exportedAt: new Date().toISOString(), filters, total: allRepos.length, reports: allRepos }, null, 2), 'application/json')
+          }
+          toast.success(`Exported ${allRepos.length.toLocaleString()} reports as ${format.toUpperCase()}`)
+        })
+        .catch(() => { setLoading(false); toast.error('Export failed') })
+      return
+    }
+
     if (reports.length === 0) {
       toast.error('No data to export')
       return
     }
-    const headers = ['name', 'language', 'quality_score', 'tier', 'stars', 'total_dependencies', 'total_files', 'scan_method', 'scan_date']
     if (format === 'csv') {
       const lines = [headers.join(',')]
       for (const r of reports) {
-        lines.push(headers.map((h) => JSON.stringify(r[h] ?? '')).join(','))
+        lines.push(headers.map((h) => safeCsvCell(r[h])).join(','))
       }
-      download(`atheon-reports-page${pagination.page}.csv`, lines.join('\n'), 'text/csv')
+      download(`atheon-reports-page${pagination.page}.csv`, '﻿' + lines.join('\n'), 'text/csv')
     } else {
       download(`atheon-reports-page${pagination.page}.json`, JSON.stringify({ exportedAt: new Date().toISOString(), page: pagination.page, total: pagination.total, reports }, null, 2), 'application/json')
     }
@@ -263,11 +324,11 @@ export default function Reports() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <p className="text-gray-400 text-xs sm:text-sm">Total packages</p>
-          <p className="text-2xl font-bold text-white">{pagination.total.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-white">{filteredTotal.toLocaleString()}</p>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <p className="text-gray-400 text-xs sm:text-sm">Showing</p>
-          <p className="text-2xl font-bold text-white">{reports.length}</p>
+          <p className="text-2xl font-bold text-white">{sortedReports.length}</p>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <p className="text-gray-400 text-xs sm:text-sm">Selected</p>
@@ -275,12 +336,12 @@ export default function Reports() {
         </div>
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <p className="text-gray-400 text-xs sm:text-sm">Page</p>
-          <p className="text-2xl font-bold text-white">{pagination.page} / {pagination.pages || 1}</p>
+          <p className="text-2xl font-bold text-white">{pagination.pages > 0 ? `${pagination.page} / ${pagination.pages}` : '—'}</p>
         </div>
       </div>
 
       <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
           <div className="lg:col-span-2">
             <label htmlFor="reports-search" className="block text-gray-400 text-xs mb-1">Search</label>
             <input
@@ -334,6 +395,22 @@ export default function Reports() {
               className="w-full bg-gray-700 text-white rounded px-3 py-2 border border-gray-600 focus:border-blue-500 focus:outline-none text-sm"
             />
           </div>
+          <div>
+            <label className="block text-gray-400 text-xs mb-1">Bookmarks</label>
+            <button
+              onClick={() => handleFilterChange('bookmarks', filters.bookmarks ? '' : 'true')}
+              className={`w-full px-4 py-2 rounded text-sm transition-colors ${
+                filters.bookmarks
+                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-1">
+                <span className={filters.bookmarks ? 'text-yellow-200' : 'text-gray-400'}>★</span>
+                {filters.bookmarks ? 'Bookmarked' : 'All'}
+              </span>
+            </button>
+          </div>
           <div className="flex items-end">
             <button
               onClick={clearFilters}
@@ -344,13 +421,38 @@ export default function Reports() {
           </div>
         </div>
 
+        {filters.language || filters.tier || filters.minScore || filters.search || filters.bookmarks ? (
+          <button
+            onClick={clearFilters}
+            className="mt-3 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+          >
+            Clear all filters
+          </button>
+        ) : null}
+
         <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button onClick={() => window.print()} className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print
+          </button>
           <button onClick={() => exportData('csv')} className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors">
-            Export CSV
+            Page CSV
           </button>
           <button onClick={() => exportData('json')} className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors">
-            Export JSON
+            Page JSON
           </button>
+          {pagination.total > pagination.perPage && (
+            <>
+              <button onClick={() => exportData('csv', true)} className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-sm rounded transition-colors">
+                Export All {pagination.total.toLocaleString()} CSV
+              </button>
+              <button onClick={() => exportData('json', true)} className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-sm rounded transition-colors">
+                Export All JSON
+              </button>
+            </>
+          )}
           <div className="flex items-center gap-3 ml-auto">
             <label htmlFor="rows-per-page" className="text-gray-400 text-xs whitespace-nowrap">Rows:</label>
             <select
@@ -389,6 +491,7 @@ export default function Reports() {
                   />
                 </th>
                 {[
+                  { k: 'bookmark', l: '★' },
                   { k: 'name', l: 'Package' },
                   { k: 'language', l: 'Language' },
                   { k: 'quality_score', l: 'Score' },
@@ -424,6 +527,7 @@ export default function Reports() {
               ) : (
                 sortedReports.map((report) => {
                   const isSelected = selectedForCompare.includes(report.id)
+                  const isBookmarked = bookmarks.includes(report.id)
                   return (
                     <tr
                       key={report.id}
@@ -439,17 +543,38 @@ export default function Reports() {
                           className="rounded border-gray-600 bg-gray-700 text-purple-500"
                         />
                       </td>
+                      <td className="px-3 py-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleBookmark(report.id) }}
+                          aria-label={isBookmarked ? `Remove ${report.name} from bookmarks` : `Bookmark ${report.name}`}
+                          className={`text-lg transition-colors ${isBookmarked ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-600 hover:text-yellow-400'}`}
+                        >
+                          ★
+                        </button>
+                      </td>
                       <td
                         onClick={() => handleReportClick(report)}
                         className="px-3 py-3 text-white font-medium text-sm cursor-pointer"
                       >
                         <div className="truncate max-w-xs">{report.name}</div>
                       </td>
-                      <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">{report.language}</td>
+                      <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">
+                        {report.language}
+                        {report.scan_date && (() => {
+                          const days = (Date.now() - new Date(report.scan_date).getTime()) / 86400000;
+                          if (days <= 7) return <span title={`Scanned ${Math.round(days)} days ago`} className="ml-1.5 px-1.5 py-0.5 bg-cyan-800 text-white text-xs font-bold rounded">NEW</span>;
+                          return null;
+                        })()}
+                      </td>
                       <td onClick={() => handleReportClick(report)} className="px-3 py-3 cursor-pointer">
                         <span className={`font-bold ${getScoreColor(report.quality_score)}`}>
                           {report.quality_score}
                         </span>
+                        {report.quality_score >= 90 ? (
+                          <span title="Top tier — 90+" className="ml-1 text-green-400 text-xs">●</span>
+                        ) : report.quality_score < 50 ? (
+                          <span title="Needs attention — below 50" className="ml-1 text-red-400 text-xs">●</span>
+                        ) : null}
                       </td>
                       <td onClick={() => handleReportClick(report)} className="px-3 py-3 cursor-pointer">
                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${getTierColor(report.tier)}`}>
@@ -526,13 +651,6 @@ export default function Reports() {
         </div>
       )}
 
-      {showModal && selectedReport && (
-        <ReportDetailModal
-          report={selectedReport}
-          onClose={() => setShowModal(false)}
-          onCompare={(r) => toggleCompareSelection(r.id)}
-        />
-      )}
       {showCompare && (
         <CompareModal ids={selectedForCompare} onClose={() => setShowCompare(false)} />
       )}

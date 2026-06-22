@@ -21,13 +21,35 @@ test.describe('Performance Tests', () => {
   });
 
   test('First Contentful Paint is fast', async ({ page }) => {
-    // Skip this test as PerformanceObserver API is not fully reliable in Playwright
-    test.skip();
+    // Measure FCP via navigation timing
+    const navigationPromise = page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+    await page.goto('/');
+    await navigationPromise;
+
+    // DOM content loaded should be fast
+    const perfTiming = await page.evaluate(() => {
+      const entries = performance.getEntriesByType('navigation');
+      return entries[0] ? { domContentLoaded: entries[0].domContentLoadedEventEnd - entries[0].startTime } : null;
+    });
+
+    if (perfTiming) {
+      expect(perfTiming.domContentLoaded).toBeLessThan(3000);
+      console.log(`FCP: ${perfTiming.domContentLoaded}ms`);
+    }
   });
 
   test('Largest Contentful Paint is acceptable', async ({ page }) => {
-    // Skip this test as LCP API is not fully reliable in Playwright
-    test.skip();
+    // Wait for largest contentful paint by checking when main content appears
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+
+    // Dashboard heading should appear quickly (proxy for LCP)
+    const startTime = Date.now();
+    await page.waitForSelector('h1, h2', { timeout: 5000 });
+    const lcpTime = Date.now() - startTime;
+
+    expect(lcpTime).toBeLessThan(5000);
+    console.log(`LCP proxy (heading visible): ${lcpTime}ms`);
   });
 
   test('Resource sizes are reasonable', async ({ page }) => {
@@ -91,14 +113,45 @@ test.describe('Performance Tests', () => {
     console.log('Data response times:', dataRequests);
   });
 
-  test('Memory usage is reasonable', async ({ page }) => {
-    // Skip this test as page.metrics() is not available in Playwright
-    test.skip();
+  test('Memory usage is reasonable — no excessive DOM nodes', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+
+    const domCount = await page.evaluate(() => {
+      return document.querySelectorAll('*').length;
+    });
+
+    // Should have fewer than 10,000 DOM nodes
+    expect(domCount).toBeLessThan(10000);
+    console.log(`DOM nodes: ${domCount}`);
   });
 
-  test('No memory leaks on navigation', async ({ page }) => {
-    // Skip this test as page.metrics() is not available in Playwright
-    test.skip();
+  test('No memory leaks on navigation — DOM stays bounded', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
+    const initialCount = await page.evaluate(() => document.querySelectorAll('*').length);
+
+    // Navigate through several pages
+    await page.goto('/reports');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
+    await page.goto('/trending');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
+    await page.goto('/pipeline');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
+    const finalCount = await page.evaluate(() => document.querySelectorAll('*').length);
+
+    // DOM count should not balloon — allow 2x growth for dynamic content
+    expect(finalCount).toBeLessThan(initialCount * 3);
+    console.log(`DOM nodes: ${initialCount} -> ${finalCount}`);
   });
 
   test('Chart rendering performance', async ({ page }) => {

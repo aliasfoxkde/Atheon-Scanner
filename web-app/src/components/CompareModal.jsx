@@ -26,7 +26,7 @@ export default function CompareModal({ ids = [], onClose }) {
     return () => { mounted = false; };
   }, [ids]);
 
-  if (!ids || ids.length === 0) return null;
+  if (!ids || ids.length < 2) return null;
 
   const compareMetric = (key, format = (v) => v) => {
     const values = reports.map((r) => r[key] || 0);

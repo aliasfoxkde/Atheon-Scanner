@@ -1,6 +1,6 @@
 # Pattern Reference
 
-Complete reference of all security and code quality patterns used by Atheon-GitHub-Scanner.
+Complete reference of all security and code quality patterns used by Atheon-Scanner.
 
 ## Table of Contents
 

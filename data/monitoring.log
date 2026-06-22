@@ -276,3 +276,69 @@
 💡 Recommendations:
    1. IMMEDIATE ACTION REQUIRED: Address critical alerts
    2. Review system logs and error reports
+2026-06-21 18:00:01,572 - __main__ - INFO - 🏥 Starting Health Monitoring
+2026-06-21 18:00:01,572 - __main__ - INFO - 🏥 Starting Health Monitoring
+2026-06-21 18:00:01,572 - __main__ - INFO - Checking system health...
+2026-06-21 18:00:01,572 - __main__ - INFO - Checking system health...
+2026-06-21 18:00:02,794 - __main__ - INFO - Checking automation health...
+2026-06-21 18:00:02,794 - __main__ - INFO - Checking automation health...
+2026-06-21 18:00:02,809 - __main__ - ERROR - Failed to check quality gates: 'NoneType' object has no attribute 'get'
+2026-06-21 18:00:02,809 - __main__ - ERROR - Failed to check quality gates: 'NoneType' object has no attribute 'get'
+2026-06-21 18:00:02,809 - __main__ - INFO - Collecting performance metrics...
+2026-06-21 18:00:02,809 - __main__ - INFO - Collecting performance metrics...
+2026-06-21 18:00:02,821 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260621_180002.json
+2026-06-21 18:00:02,821 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260621_180002.json
+2026-06-21 18:00:02,821 - __main__ - WARNING - ⚠️  Processing 1 critical alerts
+2026-06-21 18:00:02,821 - __main__ - WARNING - ⚠️  Processing 1 critical alerts
+2026-06-21 18:00:02,822 - __main__ - WARNING - CRITICAL ALERT: Disk usage above threshold: 91.2% > 90.0%
+2026-06-21 18:00:02,822 - __main__ - WARNING - CRITICAL ALERT: Disk usage above threshold: 91.2% > 90.0%
+2026-06-21 18:00:02,822 - __main__ - INFO - ✅ Health Monitoring Complete - Status: critical
+2026-06-21 18:00:02,822 - __main__ - INFO - ✅ Health Monitoring Complete - Status: critical
+🏥 Atheon GitHub Scanner - Monitoring Agent
+============================================================
+
+📊 Health Monitoring Results:
+   Overall Status: CRITICAL
+   Uptime: 100.0%
+   Timestamp: 2026-06-21T18:00:02.809482
+
+⚠️  Alerts: 2
+   - CRITICAL: Disk usage above threshold: 91.2% > 90.0%
+   - WARNING: No execution history found
+
+💡 Recommendations:
+   1. IMMEDIATE ACTION REQUIRED: Address critical alerts
+   2. Review system logs and error reports
+2026-06-22 00:00:01,776 - __main__ - INFO - 🏥 Starting Health Monitoring
+2026-06-22 00:00:01,776 - __main__ - INFO - 🏥 Starting Health Monitoring
+2026-06-22 00:00:01,784 - __main__ - INFO - Checking system health...
+2026-06-22 00:00:01,784 - __main__ - INFO - Checking system health...
+2026-06-22 00:00:02,976 - __main__ - INFO - Checking automation health...
+2026-06-22 00:00:02,976 - __main__ - INFO - Checking automation health...
+2026-06-22 00:00:02,989 - __main__ - ERROR - Failed to check quality gates: 'NoneType' object has no attribute 'get'
+2026-06-22 00:00:02,989 - __main__ - ERROR - Failed to check quality gates: 'NoneType' object has no attribute 'get'
+2026-06-22 00:00:02,990 - __main__ - INFO - Collecting performance metrics...
+2026-06-22 00:00:02,990 - __main__ - INFO - Collecting performance metrics...
+2026-06-22 00:00:03,001 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260622_000002.json
+2026-06-22 00:00:03,001 - __main__ - INFO - Saved health report to /nas/Temp/repos/Atheon-GitHub-Scanner/data/monitoring/health_report_20260622_000002.json
+2026-06-22 00:00:03,001 - __main__ - WARNING - ⚠️  Processing 1 critical alerts
+2026-06-22 00:00:03,001 - __main__ - WARNING - ⚠️  Processing 1 critical alerts
+2026-06-22 00:00:03,001 - __main__ - WARNING - CRITICAL ALERT: Disk usage above threshold: 91.4% > 90.0%
+2026-06-22 00:00:03,001 - __main__ - WARNING - CRITICAL ALERT: Disk usage above threshold: 91.4% > 90.0%
+2026-06-22 00:00:03,001 - __main__ - INFO - ✅ Health Monitoring Complete - Status: critical
+2026-06-22 00:00:03,001 - __main__ - INFO - ✅ Health Monitoring Complete - Status: critical
+🏥 Atheon GitHub Scanner - Monitoring Agent
+============================================================
+
+📊 Health Monitoring Results:
+   Overall Status: CRITICAL
+   Uptime: 100.0%
+   Timestamp: 2026-06-22T00:00:02.990149
+
+⚠️  Alerts: 2
+   - CRITICAL: Disk usage above threshold: 91.4% > 90.0%
+   - WARNING: No execution history found
+
+💡 Recommendations:
+   1. IMMEDIATE ACTION REQUIRED: Address critical alerts
+   2. Review system logs and error reports

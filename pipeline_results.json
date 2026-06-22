@@ -76,7 +76,7 @@
       "Confidence": 0.92,
       "Status": "ready_for_review",
       "CreatedAt": "2026-06-19T11:14:27.219945032-05:00",
-      "Author": "Atheon-GitHub-Scanner Pipeline",
+      "Author": "Atheon-Scanner Pipeline",
       "FilesChanged": 2,
       "BenchmarkScore": 75
     },
@@ -88,7 +88,7 @@
       "Confidence": 0.87,
       "Status": "ready_for_review",
       "CreatedAt": "2026-06-19T10:14:27.219955508-05:00",
-      "Author": "Atheon-GitHub-Scanner Pipeline",
+      "Author": "Atheon-Scanner Pipeline",
       "FilesChanged": 2,
       "BenchmarkScore": 80
     }

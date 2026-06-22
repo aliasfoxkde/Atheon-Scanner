@@ -120,6 +120,19 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(page).toHaveURL('/dashboard', { timeout: 5000 });
   });
 
+  test('g+s+e navigates to settings', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(300);
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(50);
+
+    // g then s then e — must be within NAV_SEQUENCE_TIMEOUT (1200ms) each
+    await page.keyboard.type('gse', { delay: 50 });
+    await expect(page).toHaveURL('/settings', { timeout: 5000 });
+  });
+
   test('/ focuses search on reports page', async ({ page }) => {
     await page.goto('/reports');
     await page.waitForLoadState('networkidle');
@@ -191,6 +204,39 @@ test.describe('Reports Sort & Filter', () => {
       await tierSelect.selectOption('A');
       await page.waitForTimeout(500);
     }
+  });
+});
+
+test.describe('Compare Entry Points', () => {
+  test('Dashboard Compare button navigates to reports page', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    const compareBtn = page.locator('button[aria-label="Compare reports"]');
+    await expect(compareBtn).toBeVisible();
+
+    await compareBtn.click();
+    await expect(page).toHaveURL(/\/reports$/);
+  });
+
+  test('Reports page enters compare mode when ?compare=true is in URL', async ({ page }) => {
+    await page.goto('/reports?compare=true');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+
+    // Should show a "Compare" header label or the compare column
+    const compareLabel = page.getByText('Compare');
+    await expect(compareLabel.first()).toBeVisible();
+  });
+
+  test('Compare mode shows checkboxes on report rows', async ({ page }) => {
+    await page.goto('/reports?compare=true');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+
+    // Checkboxes should be visible in the first column area
+    const firstRowCheckbox = page.locator('tbody tr').first().locator('input[type="checkbox"]');
+    await expect(firstRowCheckbox).toBeVisible();
   });
 });
 

@@ -1,6 +1,6 @@
 # Installation Guide
 
-Complete installation instructions for Atheon-GitHub-Scanner on various platforms.
+Complete installation instructions for Atheon-Scanner on various platforms.
 
 ## Table of Contents
 
@@ -38,8 +38,8 @@ Complete installation instructions for Atheon-GitHub-Scanner on various platform
 #### Clone Repository
 
 ```bash
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 ```
 
 #### Build Scanner
@@ -63,7 +63,7 @@ You should see the help output with all available commands.
 ### Method 2: Using Go Install
 
 ```bash
-go install github.com/aliasfoxkde/Atheon-GitHub-Scanner/cmd/scanner@latest
+go install github.com/aliasfoxkde/Atheon-Scanner/cmd/scanner@latest
 ```
 
 The binary will be installed to your Go bin path (usually `$GOPATH/bin` or `~/go/bin`).
@@ -72,7 +72,7 @@ The binary will be installed to your Go bin path (usually `$GOPATH/bin` or `~/go
 
 ```bash
 # Download latest release
-wget https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/releases/latest/download/scanner-linux-amd64
+wget https://github.com/aliasfoxkde/Atheon-Scanner/releases/latest/download/scanner-linux-amd64
 
 # Make executable
 chmod +x scanner-linux-amd64
@@ -93,8 +93,8 @@ sudo apt update
 sudo apt install -y golang git
 
 # Clone and build
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 go build -o scanner cmd/scanner/main.go
 
 # Optional: Install globally
@@ -108,8 +108,8 @@ sudo cp scanner /usr/local/bin/
 sudo dnf install -y golang git
 
 # Clone and build
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 go build -o scanner cmd/scanner/main.go
 
 # Optional: Install globally
@@ -123,8 +123,8 @@ sudo cp scanner /usr/local/bin/
 sudo pacman -S go git
 
 # Clone and build
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 go build -o scanner cmd/scanner/main.go
 
 # Optional: Install globally
@@ -140,8 +140,8 @@ sudo cp scanner /usr/local/bin/
 brew install go
 
 # Clone and build
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 go build -o scanner cmd/scanner/main.go
 
 # Optional: Install globally
@@ -155,8 +155,8 @@ sudo cp scanner /usr/local/bin/
 # Follow official Go installation instructions
 
 # Clone and build
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 go build -o scanner cmd/scanner/main.go
 ```
 
@@ -169,8 +169,8 @@ go build -o scanner cmd/scanner/main.go
 choco install golang git
 
 # Clone and build
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 go build -o scanner.exe cmd/scanner/main.go
 ```
 
@@ -180,8 +180,8 @@ go build -o scanner.exe cmd/scanner/main.go
 2. Install Git from https://git-scm.com/downloads
 3. Clone repository:
    ```cmd
-   git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-   cd Atheon-GitHub-Scanner
+   git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+   cd Atheon-Scanner
    ```
 4. Build:
    ```cmd
@@ -398,8 +398,8 @@ go build -o scanner.exe cmd/scanner/main.go
 If you encounter issues not covered here:
 
 1. Check [Troubleshooting Guide](../guides/troubleshooting.md)
-2. Search [GitHub Issues](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/issues)
-3. Ask in [GitHub Discussions](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner/discussions)
+2. Search [GitHub Issues](https://github.com/aliasfoxkde/Atheon-Scanner/issues)
+3. Ask in [GitHub Discussions](https://github.com/aliasfoxkde/Atheon-Scanner/discussions)
 4. Review [Technical Documentation](../technical/)
 
 ## Next Steps
@@ -419,8 +419,8 @@ For contributing to the project:
 
 ```bash
 # Clone repository
-git clone https://github.com/aliasfoxkde/Atheon-GitHub-Scanner.git
-cd Atheon-GitHub-Scanner
+git clone https://github.com/aliasfoxkde/Atheon-Scanner.git
+cd Atheon-Scanner
 
 # Install development dependencies
 go mod download
@@ -481,7 +481,7 @@ sudo rm /usr/local/bin/scanner
 
 # Remove source code
 cd ..
-rm -rf Atheon-GitHub-Scanner
+rm -rf Atheon-Scanner
 ```
 
 ---

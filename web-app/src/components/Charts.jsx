@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-  PieChart, Pie,
+  PieChart, Pie, RadarChart as ReRadarChart, Radar, PolarGrid, PolarAngleAxis,
 } from 'recharts'
 
 // ─── Bar Chart ──────────────────────────────────────────────────────────────────
@@ -91,7 +91,10 @@ export function DonutChart({ data = {}, title = '', size = 200 }) {
                     fill={SEVERITY_COLORS[entry.name] || SEG_PALETTE[i % SEG_PALETTE.length]}
                     opacity={activeIdx === null || activeIdx === i ? 1 : 0.45}
                     stroke="none"
-                  />
+                    aria-label={`${entry.name}: ${entry.value.toLocaleString()}`}
+                  >
+                    <title>{entry.name}: {entry.value.toLocaleString()}</title>
+                  </Cell>
                 ))}
               </Pie>
               <Tooltip
@@ -126,6 +129,62 @@ export function DonutChart({ data = {}, title = '', size = 200 }) {
       </div>
     </div>
   )
+}
+
+// ─── Repository Health Radar Chart ───────────────────────────────────────────────
+export function RepositoryRadarChart({ report = {}, title = 'Repository Health', size = 280 }) {
+  const {
+    quality_score: score = 0,
+    stars = 0,
+    forks = 0,
+    total_dependencies: deps = 0,
+    total_files: files = 0,
+    open_issues: issues = 0,
+  } = report;
+
+  // Normalize each axis to 0–100 scale for the radar
+  const maxStars = 50000, maxForks = 10000, maxDeps = 2000, maxFiles = 10000, maxIssues = 500;
+
+  const data = [
+    { metric: 'Quality Score', value: score, fullMark: 100 },
+    { metric: 'Stars', value: Math.min((stars / maxStars) * 100, 100), fullMark: 100 },
+    { metric: 'Forks', value: Math.min((forks / maxForks) * 100, 100), fullMark: 100 },
+    { metric: 'Dependency Health', value: Math.min((1 - deps / maxDeps) * 100, 100), fullMark: 100 },
+    { metric: 'File Coverage', value: Math.min((files / maxFiles) * 100, 100), fullMark: 100 },
+    { metric: 'Issue Control', value: Math.min((1 - issues / maxIssues) * 100, 100), fullMark: 100 },
+  ];
+
+  const [activeIdx, setActiveIdx] = useState(null);
+
+  return (
+    <div className="w-full">
+      {title && <h3 className="text-sm font-medium text-gray-400 mb-4">{title}</h3>}
+      <div className="flex flex-col items-center">
+        <ResponsiveContainer width={size} height={size}>
+          <ReRadarChart data={data} margin={{ top: 0, right: 40, bottom: 0, left: 40 }}>
+            <PolarGrid stroke="#374151" />
+            <PolarAngleAxis
+              dataKey="metric"
+              tick={{ fill: '#9ca3af', fontSize: 11 }}
+            />
+            <Radar
+              name="Health"
+              dataKey="value"
+              stroke="#6366f1"
+              fill="#6366f1"
+              fillOpacity={0.25}
+              onMouseEnter={(_, idx) => setActiveIdx(idx)}
+              onMouseLeave={() => setActiveIdx(null)}
+            />
+            <Tooltip
+              contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 8, color: '#f9fafb' }}
+              formatter={(val, name, props) => [`${props.payload.metric}: ${val.toFixed(1)}`, name]}
+            />
+          </ReRadarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }
 
 export default function Charts() { return null }

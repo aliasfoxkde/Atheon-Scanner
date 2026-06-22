@@ -47,7 +47,7 @@ A **complete autonomous ecosystem** across your 3 Atheon repositories that:
 ### **Step 1: One-Command Setup**
 
 ```bash
-cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents
+cd /nas/Temp/repos/Atheon-Scanner/agents
 chmod +x *.sh
 sudo ./master_setup.sh
 ```
@@ -412,7 +412,7 @@ All documentation is now available in:
 ### **1. Deploy the System**
 
 ```bash
-cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents
+cd /nas/Temp/repos/Atheon-Scanner/agents
 sudo ./master_setup.sh
 ```
 
@@ -436,7 +436,7 @@ tail -f daemon_output.log
 ./atheon_control.sh status
 
 # View scan results
-ls -la /nas/Temp/repos/Atheon-GitHub-Scanner/data/
+ls -la /nas/Temp/repos/Atheon-Scanner/data/
 
 # Check planning docs
 ls -la /nas/Temp/repos/Atheon-Enhanced/docs/planning/

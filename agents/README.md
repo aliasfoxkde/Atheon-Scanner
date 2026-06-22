@@ -73,7 +73,7 @@ This system represents the cutting edge of automated software development - a se
 ### One-Command Deployment
 
 ```bash
-cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents
+cd /nas/Temp/repos/Atheon-Scanner/agents
 chmod +x *.sh
 sudo ./Master_Setup_Guide.sh
 ```

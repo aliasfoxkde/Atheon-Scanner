@@ -75,7 +75,7 @@ test.describe('Reports Filters', () => {
     const afterFilter = await page.locator('tbody tr').count();
     console.log('After Python filter:', afterFilter);
 
-    const clearBtn = page.locator('button:has-text("Clear")');
+    const clearBtn = page.getByRole('button', { name: 'Clear all filters' });
     if (await clearBtn.isVisible()) {
       await clearBtn.click();
       await page.waitForTimeout(1500);

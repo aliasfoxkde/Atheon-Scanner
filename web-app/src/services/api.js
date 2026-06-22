@@ -1,4 +1,4 @@
-// API Service for Atheon GitHub Scanner
+// API Service for Atheon Scanner
 // Uses embedded data as primary source for reliable deployed operation
 
 const EMBEDDED_DATA_URL = '/embedded-data.json';
@@ -69,7 +69,7 @@ class ApiService {
       clearTimeout(timer);
       if (error.name === 'AbortError') throw error;
       // Fall back to embedded data
-      return this.handleEmbeddedFallback(endpoint, options);
+      return this.handleEmbeddedFallback(endpoint, options, signal);
     }
   }
 
@@ -100,10 +100,14 @@ class ApiService {
       const limit = parseInt(url.searchParams.get('limit') || '50');
       const language = url.searchParams.get('language');
       const tier = url.searchParams.get('tier');
+      const q = (url.searchParams.get('q') || '').toLowerCase();
+      const minScore = parseInt(url.searchParams.get('minScore') || '0');
 
       let repos = [...(data.recent_scans || [])];
       if (language) repos = repos.filter(r => r.language === language);
       if (tier) repos = repos.filter(r => r.tier === tier);
+      if (q) repos = repos.filter(r => (r.name || '').toLowerCase().includes(q) || (r.language || '').toLowerCase().includes(q));
+      if (minScore > 0) repos = repos.filter(r => (r.quality_score || 0) >= minScore);
 
       const total = repos.length;
       const pages = Math.ceil(total / limit);
@@ -196,13 +200,6 @@ class ApiService {
     return this.request(`/api/reports/${reportId}/download?format=${format}`);
   }
 
-  async compareReports(reportIds) {
-    return this.request('/api/reports/compare', {
-      method: 'POST',
-      body: JSON.stringify({ reportIds }),
-    });
-  }
-
   async getStats() {
     return this.request('/api/stats');
   }
@@ -263,7 +260,9 @@ class ApiService {
       .filter((r) => {
         const name = (r.name || '').toLowerCase();
         const lang = (r.language || '').toLowerCase();
-        return name.includes(q) || lang.includes(q);
+        const desc = (r.description || '').toLowerCase();
+        const topics = (r.topics || []).map(t => t.toLowerCase()).join(' ');
+        return name.includes(q) || lang.includes(q) || desc.includes(q) || topics.includes(q);
       })
       .slice(0, limit);
     return { success: true, data: { results, total: results.length, query } };

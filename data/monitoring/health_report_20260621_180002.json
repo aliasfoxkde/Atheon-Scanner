@@ -1,0 +1,120 @@
+{
+  "timestamp": "2026-06-21T18:00:02.809482",
+  "overall_status": "critical",
+  "system_health": {
+    "cpu_usage": {
+      "name": "cpu_usage",
+      "value": 17.5,
+      "unit": "percent",
+      "status": "healthy",
+      "threshold": 80.0,
+      "message": "CPU usage normal"
+    },
+    "memory_usage": {
+      "name": "memory_usage",
+      "value": 32.2,
+      "unit": "percent",
+      "status": "healthy",
+      "threshold": 85.0,
+      "message": "Memory usage normal"
+    },
+    "disk_usage": {
+      "name": "disk_usage",
+      "value": 91.2,
+      "unit": "percent",
+      "status": "critical",
+      "threshold": 90.0,
+      "message": "Disk usage above threshold: 91.2% > 90.0%"
+    },
+    "network_status": {
+      "name": "network_status",
+      "value": 159.05404090881348,
+      "unit": "ms",
+      "status": "healthy",
+      "threshold": 5000,
+      "message": "Network connectivity OK - 159ms"
+    },
+    "process_health": {
+      "name": "process_health",
+      "value": 3,
+      "unit": "count",
+      "status": "healthy",
+      "threshold": 1,
+      "message": "3 automation process(es) running"
+    }
+  },
+  "automation_health": {
+    "scheduler_status": {
+      "name": "scheduler_status",
+      "value": 0,
+      "unit": "hours",
+      "status": "warning",
+      "threshold": 24,
+      "message": "No execution history found"
+    },
+    "task_success_rate": {
+      "name": "task_success_rate",
+      "value": 100,
+      "unit": "percent",
+      "status": "healthy",
+      "threshold": 90,
+      "message": "No execution history - assuming healthy"
+    },
+    "recent_errors": [],
+    "data_integrity": {
+      "name": "data_integrity",
+      "value": 100.0,
+      "unit": "percent",
+      "status": "healthy",
+      "threshold": 100,
+      "message": "All data files valid"
+    },
+    "quality_gates": {
+      "name": "quality_gates",
+      "value": 0,
+      "unit": "percent",
+      "status": "error",
+      "threshold": 100,
+      "message": "Error: 'NoneType' object has no attribute 'get'"
+    }
+  },
+  "performance_metrics": {
+    "scan_performance": {
+      "repositories_scanned": 10,
+      "average_quality_score": 100.0,
+      "scan_duration_hours": 0.006188378135363261,
+      "total_findings": 0
+    },
+    "api_performance": {
+      "github_api_calls": 0,
+      "api_success_rate": 100.0,
+      "average_response_time": 0
+    },
+    "automation_performance": {}
+  },
+  "alerts": [
+    {
+      "type": "critical",
+      "category": "system",
+      "metric": "disk_usage",
+      "message": "Disk usage above threshold: 91.2% > 90.0%",
+      "value": 91.2,
+      "threshold": 90.0,
+      "timestamp": "2026-06-21T18:00:02.809444"
+    },
+    {
+      "type": "warning",
+      "category": "automation",
+      "metric": "scheduler_status",
+      "message": "No execution history found",
+      "value": 0,
+      "threshold": 24,
+      "timestamp": "2026-06-21T18:00:02.809458"
+    }
+  ],
+  "recommendations": [
+    "IMMEDIATE ACTION REQUIRED: Address critical alerts",
+    "Review system logs and error reports"
+  ],
+  "uptime_percentage": 100.0
+}

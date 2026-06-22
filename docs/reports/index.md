@@ -1,4 +1,4 @@
-# Atheon GitHub Scanner - Report Database
+# Atheon Scanner - Report Database
 
 **Last Updated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 **Total Reports:** $(find "$REPORTS_DIR" -name "*.md" -type f | wc -l)
@@ -123,4 +123,4 @@ This scanner uses patterns and concepts from the [Atheon](https://github.com/Hor
 **Scanner Version**: 0.1.0-alpha
 **Last Scan**: $(date -u +"%Y-%m-%d")
 
-For the latest updates and to contribute, visit [Atheon-GitHub-Scanner](https://github.com/aliasfoxkde/Atheon-GitHub-Scanner).
+For the latest updates and to contribute, visit [Atheon-Scanner](https://github.com/aliasfoxkde/Atheon-Scanner).

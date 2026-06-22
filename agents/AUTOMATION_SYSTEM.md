@@ -95,7 +95,7 @@ git --version       # Git 2.30+
 
 ```bash
 # Navigate to agents directory
-cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents
+cd /nas/Temp/repos/Atheon-Scanner/agents
 
 # Make scripts executable
 chmod +x Master_Setup_Guide.sh deploy_automation.sh setup.sh
@@ -108,7 +108,7 @@ sudo ./Master_Setup_Guide.sh
 
 ```bash
 # Setup agent environment
-cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents
+cd /nas/Temp/repos/Atheon-Scanner/agents
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -166,7 +166,7 @@ Update repository paths in `daemon_config.json`:
 {
   "repositories": {
     "atheon-scanner": {
-      "path": "/nas/Temp/repos/Atheon-GitHub-Scanner"
+      "path": "/nas/Temp/repos/Atheon-Scanner"
     },
     "atheon-enhanced": {
       "path": "/nas/Temp/repos/Atheon-Enhanced"
@@ -186,7 +186,7 @@ Update repository paths in `daemon_config.json`:
 
 ```bash
 # Start all agents
-cd /nas/Temp/repos/Atheon-GitHub-Scanner/agents
+cd /nas/Temp/repos/Atheon-Scanner/agents
 ./start_all.sh
 
 # Or use control interface

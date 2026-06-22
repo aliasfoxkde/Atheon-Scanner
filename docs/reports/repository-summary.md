@@ -1,6 +1,6 @@
 # Repository Summary Table
 
-Comprehensive analysis summary of all 42 repositories scanned by Atheon-GitHub-Scanner.
+Comprehensive analysis summary of all 42 repositories scanned by Atheon-Scanner.
 
 ## Complete Repository Analysis
 

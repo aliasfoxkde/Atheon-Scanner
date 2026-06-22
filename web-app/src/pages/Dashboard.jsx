@@ -3,7 +3,7 @@ import { getScoreColor, getTierColor } from '../utils/colors';
 import { Link, useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 import { loadRealScannerData, checkApiHealth, getApiConfig } from '../services/realScannerData';
-import { BarChart, DonutChart } from '../components/Charts';
+import { BarChart, DonutChart, RepositoryRadarChart } from '../components/Charts';
 import SecurityRadarChart from '../components/SecurityRadarChart';
 import { Skeleton, SkeletonStat, SkeletonText } from '../components/Skeleton';
 import { useToast } from '../contexts/ToastContext';
@@ -252,7 +252,7 @@ const Dashboard = () => {
 
   const handleDownloadReport = () => {
     const reportData = {
-      title: 'Atheon GitHub Scanner - Dashboard Report',
+      title: 'Atheon Scanner - Dashboard Report',
       generatedAt: new Date().toISOString(),
       statistics: {
         totalRepositories: stats.totalRepos,
@@ -289,8 +289,8 @@ const Dashboard = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Atheon GitHub Scanner Dashboard',
-          text: `Atheon GitHub Scanner: ${stats.totalRepos} packages analyzed with ${stats.avgQualityScore.toFixed(1)} average quality score.`,
+          title: 'Atheon Scanner Dashboard',
+          text: `Atheon Scanner: ${stats.totalRepos} packages analyzed with ${stats.avgQualityScore.toFixed(1)} average quality score.`,
           url,
         });
         return;
@@ -354,6 +354,12 @@ const Dashboard = () => {
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
               onFocus={() => searchQuery && setSearchOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  setSearchOpen(false);
+                  navigate(`/reports?q=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
               placeholder="Search packages… (⌘K)"
               data-search
               className="w-48 sm:w-64 bg-gray-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400"
@@ -431,6 +437,18 @@ const Dashboard = () => {
             </svg>
             <span className="hidden sm:inline">Share</span>
           </button>
+
+          {/* Compare Reports Button */}
+          <button
+            onClick={() => navigate('/reports')}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            aria-label="Compare reports"
+          >
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="hidden sm:inline">Compare</span>
+          </button>
         </div>
       </div>
 
@@ -462,6 +480,37 @@ const Dashboard = () => {
       {/* Main Content */}
       {!loading && !error && (
         <>
+          {/* Project Description */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-800/80 rounded-lg p-5 border border-gray-700">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-white mb-1">Atheon Scanner</h2>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  Automated GitHub repository analysis powered by{' '}
+                  <span className="text-indigo-400 font-medium">Atheon Patterns</span> — a curated rule
+                  engine for security vulnerability detection, code quality assessment, and open-source
+                  health scoring. Analyzes dependency health, secrets exposure, injection risks, crypto
+                  implementations, and configuration issues across{' '}
+                  <span className="text-white font-medium">{stats.totalRepos.toLocaleString()}+ packages</span>.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 sm:flex-col sm:items-end sm:justify-start">
+                <div className="flex gap-2">
+                  <Link to="/submit" className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors">
+                    Submit Repo
+                  </Link>
+                  <Link to="/reports" className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium rounded-lg transition-colors">
+                    Browse All
+                  </Link>
+                </div>
+                <div className="flex gap-2 text-xs text-gray-400">
+                  <span className="px-2 py-0.5 bg-gray-700 rounded">{stats.totalRepos.toLocaleString()} packages</span>
+                  <span className="px-2 py-0.5 bg-gray-700 rounded">v1.0.0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Data Source Info */}
           {stats.lastUpdated && (
             <div className="bg-gray-800 rounded-lg p-3 border border-gray-700 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -506,6 +555,40 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+
+          {/* Recent Activity */}
+          {!loading && (
+            <div className="bg-gray-800 rounded-lg border border-gray-700">
+              <div className="p-4 sm:p-6 border-b border-gray-700 flex items-center justify-between">
+                <h2 className="text-lg sm:text-xl font-semibold text-white">Recent Activity</h2>
+                <Link to="/reports" className="text-sm text-blue-400 hover:text-blue-300">View All</Link>
+              </div>
+              <div className="p-4 sm:p-6">
+                {stats.recentScans.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No recent activity</p>
+                ) : (
+                  <div className="space-y-2">
+                    {stats.recentScans.slice(0, 10).map((scan) => (
+                      <div
+                        key={scan.id}
+                        className="flex items-center justify-between p-2 bg-gray-900 rounded hover:bg-gray-700 transition-colors"
+                      >
+                        <Link
+                          to={`/reports?q=${encodeURIComponent(scan.repoName)}`}
+                          className="flex items-center gap-3 flex-1 min-w-0"
+                        >
+                          <span className="text-white font-medium text-sm truncate hover:text-blue-300">{scan.repoName}</span>
+                          <span className="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs rounded flex-shrink-0">{scan.language}</span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium flex-shrink-0 ${getTierColor(scan.tier)}`}>{scan.tier}</span>
+                        </Link>
+                        <span className="text-gray-400 text-xs ml-2 flex-shrink-0">{formatDate(scan.scanDate)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -573,11 +656,33 @@ const Dashboard = () => {
                 <h2 className="text-lg sm:text-xl font-semibold text-white">Security Findings</h2>
               </div>
               <div className="p-4 sm:p-6">
-                <SecurityRadarChart
-                  securityData={stats.securityStats}
-                  totalRepos={stats.totalRepos}
-                  size={400}
-                />
+                <div className="flex flex-col lg:flex-row items-center gap-6">
+                  <div className="flex-shrink-0">
+                    <SecurityRadarChart
+                      securityData={stats.securityStats}
+                      totalRepos={stats.totalRepos}
+                      size={300}
+                    />
+                  </div>
+                  <div className="flex flex-col items-center gap-3">
+                    <DonutChart
+                      data={stats.securityStats}
+                      title="Severity Distribution"
+                      size={180}
+                    />
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                      {Object.entries(stats.securityStats).filter(([,v]) => v > 0).map(([sev, count]) => (
+                        <div key={sev} className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            sev === 'critical' ? 'bg-red-500' : sev === 'high' ? 'bg-orange-500' : sev === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
+                          }`} />
+                          <span className="text-gray-300 capitalize">{sev}</span>
+                          <span className="text-white font-medium ml-auto">{count.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -666,6 +771,26 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* Repository Health Radar — show for highest-scoring recent scan */}
+          {stats.recentScans.length > 0 && (() => {
+            const topRepo = [...stats.recentScans].sort((a, b) => (b.qualityScore || 0) - (a.qualityScore || 0))[0];
+            return (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-indigo-500/30 transition-all">
+                <div className="p-4 sm:p-6 border-b border-gray-700 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-semibold text-white">Repository Health Radar</h2>
+                    <p className="text-xs text-gray-400 mt-1">{topRepo.repoName} — top-scoring in recent scans</p>
+                  </div>
+                  <Link to={`/reports?q=${encodeURIComponent(topRepo.repoName)}`}
+                    className="text-sm text-indigo-400 hover:text-indigo-300">View Report →</Link>
+                </div>
+                <div className="p-4 sm:p-6 flex justify-center">
+                  <RepositoryRadarChart report={topRepo} size={300} />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

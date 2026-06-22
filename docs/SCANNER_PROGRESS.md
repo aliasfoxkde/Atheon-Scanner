@@ -1,4 +1,4 @@
-# Atheon GitHub Scanner - Active Scanner Progress
+# Atheon Scanner - Active Scanner Progress
 
 ## Current Scanner Status (2026-06-19 19:57 UTC)
 
@@ -132,7 +132,7 @@ WARNING - Error searching for mongoose: Failed to resolve 'registry.npmjs.org'
 
 ### Output Directory
 
-**Location**: `/nas/Temp/repos/Atheon-GitHub-Scanner/data/`
+**Location**: `/nas/Temp/repos/Atheon-Scanner/data/`
 
 **Active Files**:
 - `mass_scan_results.jsonl` (1,054 GitHub repos)
@@ -187,7 +187,7 @@ WARNING - Error searching for mongoose: Failed to resolve 'registry.npmjs.org'
 
 ## Conclusion
 
-The Atheon GitHub Scanner is successfully generating **REAL DATA** at scale:
+The Atheon Scanner is successfully generating **REAL DATA** at scale:
 
 - ✅ **1,542+ real packages/repositories** scanned
 - ✅ **100% real data** - no fakes

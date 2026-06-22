@@ -1,0 +1,11 @@
+[
+  {
+    "type": "critical",
+    "category": "system",
+    "metric": "disk_usage",
+    "message": "Disk usage above threshold: 91.4% > 90.0%",
+    "value": 91.4,
+    "threshold": 90.0,
+    "timestamp": "2026-06-22T00:00:02.990118"
+  }
+]

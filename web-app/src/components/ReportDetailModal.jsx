@@ -1,21 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useToast } from '../contexts/ToastContext';
 import { Skeleton } from './Skeleton';
 import { getScoreColor, getTierColor } from '../utils/colors';
 import { formatDate } from '../utils/date';
 
+const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
 export default function ReportDetailModal({ report, onClose, onCompare }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [copying, setCopying] = useState(false);
+  const panelRef = useRef(null);
   const toast = useToast();
 
   useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+    const prev = document.activeElement;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const focusable = panel.querySelectorAll(FOCUSABLE);
+    if (focusable.length) focusable[0].focus();
+    document.body.style.overflow = 'hidden';
+
+    const trap = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const els = [...panel.querySelectorAll(FOCUSABLE)].filter(el => !el.disabled && el.offsetParent != null);
+      if (!els.length) return;
+      if (e.shiftKey) { if (document.activeElement === els[0]) { e.preventDefault(); els[els.length - 1].focus() } }
+      else { if (document.activeElement === els[els.length - 1]) { e.preventDefault(); els[0].focus() } }
+    };
+    panel.addEventListener('keydown', trap);
+
+    return () => {
+      window.removeEventListener('keydown', () => {});
+      panel.removeEventListener('keydown', trap);
+      document.body.style.overflow = '';
+      prev?.focus();
+    };
+  }, []);
 
   if (!report) return null;
 
@@ -99,6 +120,7 @@ export default function ReportDetailModal({ report, onClose, onCompare }) {
       aria-label={`${name} report`}
     >
       <div
+        ref={panelRef}
         className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >

@@ -1,4 +1,4 @@
-# Atheon GitHub Scanner - Real Scan Findings Report
+# Atheon Scanner - Real Scan Findings Report
 
 ## Executive Summary
 
@@ -154,7 +154,7 @@ Every scanned item represents:
 ### Active Scan Results Files
 
 ```
-/nas/Temp/repos/Atheon-GitHub-Scanner/data/
+/nas/Temp/repos/Atheon-Scanner/data/
 ├── mass_scan_results.jsonl                    # 1,054 GitHub repos
 ├── local_packages_scan_20260619_195534.jsonl  # 488 local npm packages
 └── npm_scan_results_20260619_195520.jsonl    # npm_speed_scanner (in progress)
@@ -188,7 +188,7 @@ Every scanned item represents:
 
 ## Conclusion
 
-The Atheon GitHub Scanner has successfully transitioned from:
+The Atheon Scanner has successfully transitioned from:
 - ❌ **OLD**: Slow GitHub API scanning (2 repos/min) with fake data fallbacks
 - ✅ **NEW**: Ultra-fast local package scanning (15,000+ packages/min) with 100% real data
 

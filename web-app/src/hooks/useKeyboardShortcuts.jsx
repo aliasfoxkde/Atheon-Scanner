@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
  * Supports:
  *   /          → focus search (when on /reports)
  *   g d/r/t/s/p/a → navigate to dashboard/reports/trending/submit/pipeline/api
+ *   g s e        → navigate to Settings
  *   ?          → open shortcuts modal
  *   Esc        → close any modal
  */
@@ -14,6 +15,7 @@ const NAV_SEQUENCE_TIMEOUT = 1200;
 export default function useKeyboardShortcuts() {
   const navigate = useNavigate();
   const lastG = useRef(0);
+  const lastSe = useRef(0);
   const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
@@ -49,6 +51,25 @@ export default function useKeyboardShortcuts() {
         return;
       }
 
+      // g+s+e → Settings (nested sequence)
+      if (lastG.current && e.key === 's' && Date.now() - lastG.current < NAV_SEQUENCE_TIMEOUT) {
+        lastSe.current = Date.now();
+        lastG.current = 0;
+        return; // wait for 'e'
+      }
+
+      if (lastSe.current && e.key === 'e' && Date.now() - lastSe.current < NAV_SEQUENCE_TIMEOUT) {
+        e.preventDefault();
+        lastSe.current = 0;
+        navigate('/settings');
+        return;
+      }
+
+      // g+s without 'e' → Submit (after g+s+e window expires without 'e')
+      if (lastSe.current && Date.now() - lastSe.current >= NAV_SEQUENCE_TIMEOUT) {
+        lastSe.current = 0;
+      }
+
       if (Date.now() - lastG.current < NAV_SEQUENCE_TIMEOUT) {
         const routes = { d: '/dashboard', r: '/reports', t: '/trending', s: '/submit', p: '/pipeline', a: '/api' };
         const target = routes[e.key];
@@ -77,6 +98,7 @@ export function ShortcutsModal({ open, onClose }) {
     { keys: ['g', 's'], desc: 'Go to Submit' },
     { keys: ['g', 'p'], desc: 'Go to Pipeline' },
     { keys: ['g', 'a'], desc: 'Go to API docs' },
+    { keys: ['g', 's', 'e'], desc: 'Go to Settings' },
     { keys: ['?'], desc: 'Toggle this help' },
     { keys: ['Esc'], desc: 'Close modal / blur input' },
   ];

@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Atheon-GitHub-Scanner, please report it responsibly.
+If you discover a security vulnerability in Atheon-Scanner, please report it responsibly.
 
 ### How to Report
 

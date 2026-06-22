@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Atheon GitHub Scanner - Basic UI Validation', () => {
+test.describe('Atheon Scanner - Basic UI Validation', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the dashboard
     await page.goto('/'); // Use relative path to use baseURL from config
@@ -9,7 +9,7 @@ test.describe('Atheon GitHub Scanner - Basic UI Validation', () => {
 
   test('Dashboard loads and displays real data', async ({ page }) => {
     // Check if we're on the right page
-    await expect(page).toHaveTitle(/Atheon GitHub Scanner/);
+    await expect(page).toHaveTitle(/Atheon Scanner/);
 
     // Check for main heading
     const heading = page.locator('h1, h2').filter({ hasText: 'Dashboard' });
@@ -104,7 +104,7 @@ test.describe('Atheon GitHub Scanner - Basic UI Validation', () => {
   });
 });
 
-test.describe('Atheon GitHub Scanner - Interactive Elements', () => {
+test.describe('Atheon Scanner - Interactive Elements', () => {
   test('Download and Share buttons functionality', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');

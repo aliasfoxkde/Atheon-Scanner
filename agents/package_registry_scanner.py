@@ -25,6 +25,35 @@ from dataclasses import dataclass, asdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import xml.etree.ElementTree as ET
+import re
+
+
+def sanitize_repo_name(name: str) -> str:
+    """Remove anything except alphanumeric, dash, underscore, dot, slash"""
+    return re.sub(r'[^a-zA-Z0-9._/-]', '', name)
+
+
+def sanitize_path(path: str, base_dir: str = None) -> str:
+    """Prevent path traversal by resolving to absolute and checking bounds.
+
+    Args:
+        path: The path to sanitize
+        base_dir: Optional base directory to constrain path within
+
+    Returns:
+        Sanitized absolute path
+    """
+    # Remove any null bytes and control characters
+    path = path.replace('\x00', '')
+    # Remove path traversal attempts
+    path = re.sub(r'\.\.[/\\]', '', path)
+    abs_path = os.path.abspath(path)
+    if base_dir:
+        base_abs = os.path.abspath(base_dir)
+        if not abs_path.startswith(base_abs):
+            return base_abs
+    return abs_path
+
 
 # Setup logging
 logging.basicConfig(
@@ -342,7 +371,11 @@ class PackageRegistryScanner:
 
             logger.info(f"Cloning {github_repo} from {package_info['registry']} package...")
 
-            repo_path = self.clone_dir / github_repo.replace('/', '_')
+            # Sanitize the GitHub repo name for use in paths
+            safe_github_repo = sanitize_repo_name(github_repo)
+            repo_path = self.clone_dir / safe_github_repo.replace('/', '_')
+            # Validate path stays within clone_dir bounds
+            repo_path = Path(sanitize_path(str(repo_path), str(self.clone_dir)))
 
             # Remove if exists
             if repo_path.exists():

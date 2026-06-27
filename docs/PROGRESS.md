@@ -3,7 +3,8 @@
 ## 2026-06-26
 
 ### Deployment
-- Deployed to https://efa77391.atheon-scanner.pages.dev (latest)
+- Deployed to https://e532c82f.atheon-scanner.pages.dev (latest)
+- Commit: 84eda596 (fix: E2E test reliability — SW race conditions)
 - Git remote: https://github.com/aliasfoxkde/Atheon-Scanner
 - Commits pushed: 5ad213df → b5d1ed08 (12 new commits this session)
 

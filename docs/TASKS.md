@@ -57,7 +57,7 @@
 ## Pending (Future Work)
 
 ### High Priority
-- [ ] Run E2E Playwright tests (CI or locally — `npm run test:e2e`)
+- [x] Run E2E Playwright tests (164 passing — `npm run test:e2e`)
 - [ ] sitemap.xml auto-generation on deploy (currently static, manual update)
 - [ ] PWA push notifications / background sync for scan submission
 

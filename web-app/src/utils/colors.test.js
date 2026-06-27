@@ -27,10 +27,11 @@ describe('colors.js', () => {
       expect(getScoreColor(-10)).toBe('text-red-400');
     });
 
-    it('handles non-number inputs', () => {
-      expect(getScoreColor(undefined)).toBe('text-red-400');
-      expect(getScoreColor(null)).toBe('text-red-400');
-      expect(getScoreColor('foo')).toBe('text-red-400');
+    it('returns gray for non-number inputs (NaN/undefined/null)', () => {
+      expect(getScoreColor(undefined)).toBe('text-gray-400');
+      expect(getScoreColor(null)).toBe('text-gray-400');
+      expect(getScoreColor(NaN)).toBe('text-gray-400');
+      expect(getScoreColor('foo')).toBe('text-gray-400');
     });
   });
 

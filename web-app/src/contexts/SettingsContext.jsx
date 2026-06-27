@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const STORAGE_KEY = 'atheon_settings';
 const DEFAULTS = {
@@ -10,13 +10,28 @@ const DEFAULTS = {
   showFiles: true,
 };
 
+// Validate and sanitize loaded settings against defaults
+function validateSettings(stored) {
+  const validated = {};
+  for (const key of Object.keys(DEFAULTS)) {
+    const def = DEFAULTS[key];
+    const val = stored[key];
+    if (val === undefined) continue;
+    // Type check: only allow same-type values
+    if (typeof val === typeof def) {
+      validated[key] = val;
+    }
+  }
+  return validated;
+}
+
 const SettingsContext = createContext(null);
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      return { ...DEFAULTS, ...stored };
+      return { ...DEFAULTS, ...validateSettings(stored) };
     } catch {
       return DEFAULTS;
     }
@@ -30,14 +45,18 @@ export function SettingsProvider({ children }) {
     }
   }, [settings]);
 
-  const updateSettings = (patch) => setSettings((s) => ({ ...s, ...patch }));
-  const reset = () => setSettings(DEFAULTS);
-
-  return (
-    <SettingsContext.Provider value={{ settings, updateSettings, reset }}>
-      {children}
-    </SettingsContext.Provider>
+  const updateSettings = useMemo(
+    () => (patch) => setSettings((s) => ({ ...s, ...validateSettings(patch) })),
+    []
   );
+  const reset = useMemo(() => () => setSettings(DEFAULTS), []);
+
+  const value = useMemo(
+    () => ({ settings, updateSettings, reset }),
+    [settings, updateSettings, reset]
+  );
+
+  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
 
 export function useSettings() {

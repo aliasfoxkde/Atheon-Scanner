@@ -25,6 +25,7 @@ export default [
       'react/prop-types': 'off',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/exhaustive-deps': 'warn', // 'error' causes false positives with React 18 concurrent features
       'no-empty': 'warn',
     },
   },

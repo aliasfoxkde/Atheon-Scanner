@@ -29,6 +29,8 @@ export default function useKeyboardShortcuts() {
       }
 
       if (e.key === 'Escape') {
+        lastG.current = 0;
+        lastSe.current = 0;
         setShowHelp(false);
         return;
       }
@@ -72,7 +74,14 @@ export default function useKeyboardShortcuts() {
       }
 
       if (Date.now() - lastG.current < NAV_SEQUENCE_TIMEOUT) {
-        const routes = { d: '/dashboard', r: '/reports', t: '/trending', s: '/submit', p: '/pipeline', a: '/api' };
+        const routes = {
+          d: '/dashboard',
+          r: '/reports',
+          t: '/trending',
+          s: '/submit',
+          p: '/pipeline',
+          a: '/api',
+        };
         const target = routes[e.key];
         if (target) {
           e.preventDefault();

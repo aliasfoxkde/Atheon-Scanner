@@ -140,11 +140,13 @@ export default function Trending() {
             .filter(Boolean);
         }
         if (!Array.isArray(ids)) throw new Error('Not an array');
-        const next = [...new Set([...watchlist, ...ids])];
-        setWatchlist(next);
-        try {
-          localStorage.setItem(WATCHLIST_KEY, JSON.stringify(next));
-        } catch {}
+        setWatchlist((prev) => {
+          const next = [...new Set([...prev, ...ids])];
+          try {
+            localStorage.setItem(WATCHLIST_KEY, JSON.stringify(next));
+          } catch {}
+          return next;
+        });
         toast.success(`Imported ${ids.length} watchlist item(s)`);
       } catch {
         toast.error('Failed to import watchlist — invalid format');

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
 import pkg from '../../package.json';
@@ -20,6 +20,13 @@ export default function Settings() {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const resetTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
   const handleReset = () => {
     if (showResetConfirm) {
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
@@ -99,7 +106,9 @@ export default function Settings() {
         <h2 className="text-lg font-semibold text-white mb-4">Display</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Default page size</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Default page size
+            </label>
             <select
               value={settings.defaultPageSize}
               onChange={(e) => updateSettings({ defaultPageSize: Number(e.target.value) })}
@@ -168,7 +177,11 @@ export default function Settings() {
         </dl>
         <button
           onClick={handleReset}
-          aria-label={showResetConfirm ? 'Click again to confirm reset of all settings' : 'Reset all settings to defaults'}
+          aria-label={
+            showResetConfirm
+              ? 'Click again to confirm reset of all settings'
+              : 'Reset all settings to defaults'
+          }
           className="mt-6 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           {showResetConfirm ? 'Click again to confirm reset' : 'Reset all settings'}

@@ -21,12 +21,21 @@ function abortSignalAny(signals) {
 }
 
 // Module-level cache with TTL (per-URL to avoid cross-contamination)
+// Eviction via _evictStale prevents unbounded Map growth over time
 const _cache = new Map();
 const CACHE_TTL_MS = 60_000; // 60 seconds
+
+/** Remove expired entries from cache (called on every cache read to prevent unbounded growth) */
+function _evictStale(now) {
+  for (const [url, entry] of _cache) {
+    if (now - entry.time >= CACHE_TTL_MS) _cache.delete(url);
+  }
+}
 
 /** Load with in-module cache and 10s timeout; respects external abort signal */
 async function fetchWithCache(url, ttlMs, signal) {
   const now = Date.now();
+  _evictStale(now);
   const cached = _cache.get(url);
   if (cached && now - cached.time < ttlMs) return cached.data;
   const controller = new AbortController();
@@ -38,7 +47,8 @@ async function fetchWithCache(url, ttlMs, signal) {
     clearTimeout(timer);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    _cache.set(url, { data, time: now });
+    _evictStale(Date.now()); // clean before writing to avoid filling map
+    _cache.set(url, { data, time: Date.now() });
     return data;
   } catch (e) {
     clearTimeout(timer);

@@ -197,6 +197,7 @@ const Dashboard = () => {
       const tick = setInterval(() => {
         const elapsed = (Date.now() - startTime) / 1000;
         if (elapsed >= seconds) {
+          // Create a fresh controller for each refresh cycle
           const ctrl = new AbortController();
           fetchStats(ctrl.signal);
           checkHealth(ctrl.signal);

@@ -26,14 +26,12 @@ function abortSignalAny(signals) {
 
 async function loadEmbeddedData(signal) {
   const now = Date.now();
-  if (dataCache && (now - dataCacheTime) < CACHE_TTL) {
+  if (dataCache && now - dataCacheTime < CACHE_TTL) {
     return dataCache;
   }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10_000);
-  const combinedSignal = signal
-    ? abortSignalAny([controller.signal, signal])
-    : controller.signal;
+  const combinedSignal = signal ? abortSignalAny([controller.signal, signal]) : controller.signal;
   try {
     const response = await fetch(EMBEDDED_DATA_URL, { signal: combinedSignal });
     clearTimeout(timer);
@@ -43,19 +41,19 @@ async function loadEmbeddedData(signal) {
     return dataCache;
   } catch (e) {
     clearTimeout(timer);
-    if (e.name === 'AbortError') throw e;
+    // Distinguish caller-abort (rethrown, propagate cancellation) from
+    // timeout/network-abort (return null so fallback path is taken)
+    if (e.name === 'AbortError' && !controller.signal.aborted) throw e;
     return null;
   }
 }
 
 class ApiService {
-  async request(endpoint, options = {}, signal) {
+  async request(endpoint, options = {}, signal, retries = 2) {
     const url = `${API_BASE_URL}${endpoint}`;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15_000);
-    const combinedSignal = signal
-      ? abortSignalAny([controller.signal, signal])
-      : controller.signal;
+    const combinedSignal = signal ? abortSignalAny([controller.signal, signal]) : controller.signal;
     const config = {
       ...options,
       signal: combinedSignal,
@@ -65,27 +63,39 @@ class ApiService {
       },
     };
 
-    try {
-      const response = await fetch(url, config);
-      clearTimeout(timer);
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(url, config);
+        clearTimeout(timer);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('API returned HTML instead of JSON');
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        clearTimeout(timer);
+        if (error.name === 'AbortError') throw error;
+        // Last attempt or non-retryable error → fall back to embedded data
+        if (attempt >= retries) break;
+        // Exponential backoff: 500ms, 1000ms
+        await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt)));
+        // Re-create abort signal for retry
+        const retryController = new AbortController();
+        const retryTimer = setTimeout(() => retryController.abort(), 15_000);
+        config.signal = signal
+          ? abortSignalAny([retryController.signal, signal])
+          : retryController.signal;
       }
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('API returned HTML instead of JSON');
-      }
-
-      const data = await response.json();
-      return { success: true, data };
-    } catch (error) {
-      clearTimeout(timer);
-      if (error.name === 'AbortError') throw error;
-      // Fall back to embedded data
-      return this.handleEmbeddedFallback(endpoint, options, signal);
     }
+
+    return this.handleEmbeddedFallback(endpoint, options, signal);
   }
 
   async handleEmbeddedFallback(endpoint, options, signal) {
@@ -119,10 +129,14 @@ class ApiService {
       const minScore = parseInt(url.searchParams.get('minScore') || '0');
 
       let repos = [...(data.recent_scans || [])];
-      if (language) repos = repos.filter(r => r.language === language);
-      if (tier) repos = repos.filter(r => r.tier === tier);
-      if (q) repos = repos.filter(r => (r.name || '').toLowerCase().includes(q) || (r.language || '').toLowerCase().includes(q));
-      if (minScore > 0) repos = repos.filter(r => (r.quality_score || 0) >= minScore);
+      if (language) repos = repos.filter((r) => r.language === language);
+      if (tier) repos = repos.filter((r) => r.tier === tier);
+      if (q)
+        repos = repos.filter(
+          (r) =>
+            (r.name || '').toLowerCase().includes(q) || (r.language || '').toLowerCase().includes(q)
+        );
+      if (minScore > 0) repos = repos.filter((r) => (r.quality_score || 0) >= minScore);
 
       const total = repos.length;
       const pages = Math.ceil(total / limit);
@@ -165,7 +179,8 @@ class ApiService {
       // Build per-language avg from top_languages array (real computed scores)
       const langScores = {};
       for (const entry of data.top_languages || []) {
-        if (entry.language) langScores[entry.language] = entry.avgScore || entry.average_quality_score;
+        if (entry.language)
+          langScores[entry.language] = entry.avgScore || entry.average_quality_score;
       }
       for (const [lang, count] of Object.entries(data.language_distribution || {})) {
         ecosystem_comparison[lang] = {
@@ -276,7 +291,7 @@ class ApiService {
         const name = (r.name || '').toLowerCase();
         const lang = (r.language || '').toLowerCase();
         const desc = (r.description || '').toLowerCase();
-        const topics = (r.topics || []).map(t => t.toLowerCase()).join(' ');
+        const topics = (r.topics || []).map((t) => t.toLowerCase()).join(' ');
         return name.includes(q) || lang.includes(q) || desc.includes(q) || topics.includes(q);
       })
       .slice(0, limit);

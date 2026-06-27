@@ -1,6 +1,14 @@
 import { useState, useMemo } from 'react';
 import { getAllRepositories } from '../services/realScannerData';
 
+function safeParseResponse(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}
+
 export default function ApiDocs() {
   const [activeEndpoint, setActiveEndpoint] = useState(null);
   const [requestBody, setRequestBody] = useState('');
@@ -382,6 +390,8 @@ export default function ApiDocs() {
                 setRequestBody(endpoint.requestBody || '');
                 setResponse(null);
               }}
+              aria-expanded={activeEndpoint === endpoint.id}
+              aria-controls={`endpoint-body-${endpoint.id}`}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-700 transition-colors"
             >
               <div className="flex items-center space-x-4">
@@ -417,7 +427,10 @@ export default function ApiDocs() {
             </button>
 
             {activeEndpoint === endpoint.id && (
-              <div className="px-6 py-4 border-t border-gray-700 space-y-6">
+              <div
+                id={`endpoint-body-${endpoint.id}`}
+                className="px-6 py-4 border-t border-gray-700 space-y-6"
+              >
                 {/* Description */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Overview</h3>
@@ -476,11 +489,8 @@ export default function ApiDocs() {
                     <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
                       <pre className="text-sm text-gray-300 overflow-x-auto">
                         {(() => {
-                          try {
-                            return JSON.stringify(JSON.parse(endpoint.requestBody), null, 2);
-                          } catch {
-                            return endpoint.requestBody;
-                          }
+                          const parsed = safeParseResponse(endpoint.requestBody);
+                          return parsed ? JSON.stringify(parsed, null, 2) : endpoint.requestBody;
                         })()}
                       </pre>
                     </div>
@@ -546,9 +556,14 @@ export default function ApiDocs() {
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-3">Response Schema</h3>
                   <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                    <pre className="text-sm text-gray-300 overflow-x-auto">
-                      {JSON.stringify(JSON.parse(endpoint.response), null, 2)}
-                    </pre>
+                    {(() => {
+                      const parsed = safeParseResponse(endpoint.response);
+                      return (
+                        <pre className="text-sm text-gray-300 overflow-x-auto">
+                          {parsed ? JSON.stringify(parsed, null, 2) : endpoint.response}
+                        </pre>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

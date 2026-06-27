@@ -1,47 +1,63 @@
 // Shared modal wrapper — handles backdrop, keyboard (Escape), focus trap, and aria props
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react';
 
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+const FOCUSABLE =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), details > summary';
 
 export default function Modal({ id, label, children, onClose, size = 'max-w-4xl' }) {
-  const panelRef = useRef(null)
+  const panelRef = useRef(null);
 
   useEffect(() => {
-    const prev = document.activeElement
-    const panel = panelRef.current
-    if (!panel) return
+    if (typeof document === 'undefined') return;
+    const prev = document.activeElement;
+    const panel = panelRef.current;
+    if (!panel) return;
 
     // Move focus inside the modal
-    const focusable = panel.querySelectorAll(FOCUSABLE)
-    if (focusable.length) focusable[0].focus()
+    const focusable = panel.querySelectorAll(FOCUSABLE);
+    if (focusable.length) focusable[0].focus();
 
-    const close = (e) => { if (e.key === 'Escape') onClose?.() }
+    const close = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose?.();
+      }
+    };
     // Attach to panel so only the focused/topmost modal responds to Escape,
     // not all stacked modals simultaneously
-    panel.addEventListener('keydown', close)
-    document.body.style.overflow = 'hidden'
+    panel.addEventListener('keydown', close);
+    document.body.style.overflow = 'hidden';
 
     // Focus trap
     const trap = (e) => {
-      if (e.key !== 'Tab') return
-      const els = [...panel.querySelectorAll(FOCUSABLE)].filter(el => !el.disabled && el.offsetParent != null)
-      if (!els.length) return
-      const first = els[0], last = els[els.length - 1]
+      if (e.key !== 'Tab') return;
+      const els = [...panel.querySelectorAll(FOCUSABLE)].filter(
+        (el) => !el.disabled && el.offsetParent != null
+      );
+      if (!els.length) return;
+      const first = els[0],
+        last = els[els.length - 1];
       if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
       } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
-    }
-    panel.addEventListener('keydown', trap)
+    };
+    panel.addEventListener('keydown', trap);
 
     return () => {
-      panel.removeEventListener('keydown', close)
-      panel.removeEventListener('keydown', trap)
-      document.body.style.overflow = ''
-      prev?.focus()
-    }
-  }, [onClose])
+      panel.removeEventListener('keydown', close);
+      panel.removeEventListener('keydown', trap);
+      document.body.style.overflow = '';
+      prev?.focus();
+    };
+  }, [onClose]);
 
   return (
     <div
@@ -61,5 +77,5 @@ export default function Modal({ id, label, children, onClose, size = 'max-w-4xl'
         {children}
       </div>
     </div>
-  )
+  );
 }

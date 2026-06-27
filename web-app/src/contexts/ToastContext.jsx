@@ -23,6 +23,12 @@ export function ToastProvider({ children }) {
   const [toasts, dispatch] = useReducer(reducer, []);
   const timers = useRef(new Map());
 
+  const clear = useCallback(() => {
+    timers.current.forEach(clearTimeout);
+    timers.current.clear();
+    dispatch({ type: 'CLEAR' });
+  }, []);
+
   const dismiss = useCallback((id) => {
     if (timers.current.has(id)) {
       clearTimeout(timers.current.get(id));
@@ -37,19 +43,18 @@ export function ToastProvider({ children }) {
       const toast = { id, message, type };
       dispatch({ type: 'ADD', toast });
       if (duration > 0) {
-        const timer = setTimeout(() => dismiss(id), duration);
+        const timer = setTimeout(() => {
+          // Guard: skip if already dismissed (e.g., by clear())
+          if (timers.current.has(id)) {
+            dismiss(id);
+          }
+        }, duration);
         timers.current.set(id, timer);
       }
       return id;
     },
     [dismiss]
   );
-
-  const clear = useCallback(() => {
-    timers.current.forEach(clearTimeout);
-    timers.current.clear();
-    dispatch({ type: 'CLEAR' });
-  }, []);
 
   const value = useMemo(
     () => ({

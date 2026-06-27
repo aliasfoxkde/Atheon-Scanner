@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { Skeleton, SkeletonStat } from '../components/Skeleton';
 import { loadRealScannerData } from '../services/realScannerData';
+import { addPendingSubmission } from '../utils/backgroundSync';
 
 const RECENT_KEY = 'atheon_recent_submissions';
 
@@ -45,7 +46,8 @@ export default function Submit() {
   };
 
   const computeScanEstimate = async (repoInput) => {
-    if (!repoInput || !repoInput.includes('/')) {
+    const trimmed = (repoInput || '').trim();
+    if (!trimmed || !trimmed.includes('/')) {
       setScanEstimate(null);
       setEstimateVisible(false);
       return;
@@ -138,30 +140,46 @@ export default function Submit() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      setScanning(false);
+      return;
+    }
     setScanning(true);
     setResult(null);
 
     const target = formData.type === 'github' ? formData.repo : formData.url;
 
-    // Simulate scan locally — we don't have a real backend for new scans
-    scanTimerRef.current = setTimeout(() => {
-      if (!mountedRef.current) return;
-      const mockResult = {
-        scanId: `sim-${Date.now()}`,
-        status: 'queued',
-        target,
-        type: formData.type,
-        estimatedTime: '2-5 minutes',
-        submittedAt: new Date().toISOString(),
-        message:
-          'Scan queued. Since this is a read-only deployment, full scan execution is not available. Browse existing reports below.',
-      };
-      setResult(mockResult);
+    try {
+      // If offline, queue the submission for later
+      if (!navigator.onLine) {
+        setScanning(false);
+        addPendingSubmission({ target, type: formData.type });
+        toast.info("You're offline. Scan will be submitted when you're back online.");
+        return;
+      }
+
+      // Simulate scan locally — we don't have a real backend for new scans
+      scanTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return;
+        const mockResult = {
+          scanId: `sim-${Date.now()}`,
+          status: 'queued',
+          target,
+          type: formData.type,
+          estimatedTime: '2-5 minutes',
+          submittedAt: new Date().toISOString(),
+          message:
+            'Scan queued. Since this is a read-only deployment, full scan execution is not available. Browse existing reports below.',
+        };
+        setResult(mockResult);
+        setScanning(false);
+        toast.success('Scan request submitted');
+        persistRecent({ target, type: formData.type, at: mockResult.submittedAt });
+      }, 800);
+    } catch (err) {
       setScanning(false);
-      toast.success('Scan request submitted');
-      persistRecent({ target, type: formData.type, at: mockResult.submittedAt });
-    }, 800);
+      toast.error('Submission failed. Please try again.');
+    }
   };
 
   const fillRecent = (r) => {

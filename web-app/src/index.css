@@ -43,6 +43,28 @@ code {
   height: 8px;
 }
 
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, #4b5563) var(--scrollbar-track, #1f2937);
+}
+
+/* Selection color */
+::selection {
+  background-color: #4f46e5;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: #4f46e5;
+  color: #ffffff;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-track, #1f2937);
 }
@@ -103,5 +125,38 @@ code {
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus-visible styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Print media query */
+@media print {
+  body {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
   }
 }

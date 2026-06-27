@@ -1,12 +1,32 @@
-import { useMemo, useState } from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { useMemo, useState, useEffect } from 'react';
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 
 const FILTER_OPTIONS = {
   category: ['all', 'injection', 'xss', 'auth', 'crypto', 'config'],
 };
 
+function useReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const handler = (e) => setReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return reducedMotion;
+}
+
 export default function SecurityRadarChart({ securityData, totalRepos, size = 400 }) {
   const [activeFilters, setActiveFilters] = useState({ severity: 'all', category: 'all' });
+  const reducedMotion = useReducedMotion();
 
   const rawAxes = [
     { key: 'dependencyVulns', label: 'Dependency Vulns', category: 'config' },
@@ -20,35 +40,47 @@ export default function SecurityRadarChart({ securityData, totalRepos, size = 40
 
   const chartData = useMemo(() => {
     const repos = totalRepos || 1;
-    return rawAxes
-      .filter((axis) => {
-        if (activeFilters.category !== 'all' && axis.category !== activeFilters.category) return false;
-        return true;
-      })
-      .map((axis) => {
-        const raw = securityData?.[axis.key] || 0;
-        const value = Math.min((raw / repos) * 50, 100);
-        return {
-          axis: axis.label,
-          value: Math.round(value),
-          raw,
-          category: axis.category,
-        };
-      });
-  }, [securityData, totalRepos, activeFilters]);
+    const filtered = rawAxes.filter((axis) => {
+      if (activeFilters.category !== 'all' && axis.category !== activeFilters.category)
+        return false;
+      return true;
+    });
+    // Guard against empty filtered result
+    if (filtered.length === 0) return [{ axis: 'No Data', value: 0, raw: 0, category: 'all' }];
+    return filtered.map((axis) => {
+      const raw = Number(securityData?.[axis.key]) || 0;
+      const computed = (raw / repos) * 50;
+      const value = Number.isFinite(computed) ? Math.min(computed, 100) : 0;
+      return {
+        axis: axis.label,
+        value: Math.round(value),
+        raw,
+        category: axis.category,
+      };
+    });
+  }, [securityData, totalRepos, activeFilters.category]); // intential: only category triggers recalc
 
   const getSeverityColor = (sev) => {
     switch (sev) {
-      case 'critical': return '#ef4444';
-      case 'high': return '#f97316';
-      case 'medium': return '#f59e0b';
-      case 'low': return '#22c55e';
-      default: return '#6b7280';
+      case 'critical':
+        return '#ef4444';
+      case 'high':
+        return '#f97316';
+      case 'medium':
+        return '#f59e0b';
+      case 'low':
+        return '#22c55e';
+      default:
+        return '#6b7280';
     }
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div
+      className="flex flex-col items-center w-full"
+      role="img"
+      aria-label="Security radar analysis chart"
+    >
       <div className="flex justify-between items-center w-full mb-4">
         <h3 className="text-lg font-bold text-white">Security Radar Analysis</h3>
         <div className="flex gap-2">
@@ -68,12 +100,15 @@ export default function SecurityRadarChart({ securityData, totalRepos, size = 40
       </div>
 
       <ResponsiveContainer width="100%" height={size}>
-        <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="65%">
+        <RadarChart
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          outerRadius="65%"
+          isAnimationActive={!reducedMotion}
+        >
           <PolarGrid stroke="rgba(148,163,184,0.2)" />
-          <PolarAngleAxis
-            dataKey="axis"
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
-          />
+          <PolarAngleAxis dataKey="axis" tick={{ fill: '#94a3b8', fontSize: 11 }} />
           <Radar
             name="Security Risk"
             dataKey="value"
@@ -83,13 +118,20 @@ export default function SecurityRadarChart({ securityData, totalRepos, size = 40
             strokeWidth={2}
           />
           <Tooltip
-            contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px', color: '#f3f4f6' }}
+            contentStyle={{
+              backgroundColor: '#1f2937',
+              border: '1px solid #374151',
+              borderRadius: '8px',
+              color: '#f3f4f6',
+            }}
             formatter={(value, name, props) => [
               <span key="val">
                 <strong>{value}</strong>
                 <span className="text-gray-400 text-xs ml-1">/100 risk</span>
                 <br />
-                <span className="text-gray-400 text-xs">{props.payload.raw?.toLocaleString()} raw findings</span>
+                <span className="text-gray-400 text-xs">
+                  {props.payload?.raw?.toLocaleString() ?? '0'} raw findings
+                </span>
               </span>,
               props.payload.axis,
             ]}
@@ -103,14 +145,25 @@ export default function SecurityRadarChart({ securityData, totalRepos, size = 40
           <h4 className="text-sm font-semibold text-white mb-3">Severity Breakdown</h4>
           <div className="space-y-2">
             {[
-              { label: 'Critical', count: securityData?.critical || 0, color: getSeverityColor('critical') },
+              {
+                label: 'Critical',
+                count: securityData?.critical || 0,
+                color: getSeverityColor('critical'),
+              },
               { label: 'High', count: securityData?.high || 0, color: getSeverityColor('high') },
-              { label: 'Medium', count: securityData?.medium || 0, color: getSeverityColor('medium') },
+              {
+                label: 'Medium',
+                count: securityData?.medium || 0,
+                color: getSeverityColor('medium'),
+              },
               { label: 'Low', count: securityData?.low || 0, color: getSeverityColor('low') },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
                   <span className="text-xs text-gray-400">{item.label}</span>
                 </div>
                 <span className="text-sm font-bold text-white">{item.count.toLocaleString()}</span>
@@ -136,10 +189,13 @@ export default function SecurityRadarChart({ securityData, totalRepos, size = 40
                     className="w-2.5 h-2.5 rounded-full"
                     style={{
                       backgroundColor:
-                        d.value >= 80 ? '#ef4444' :
-                        d.value >= 60 ? '#f97316' :
-                        d.value >= 40 ? '#f59e0b' :
-                        '#22c55e',
+                        d.value >= 80
+                          ? '#ef4444'
+                          : d.value >= 60
+                            ? '#f97316'
+                            : d.value >= 40
+                              ? '#f59e0b'
+                              : '#22c55e',
                     }}
                   />
                   <span className="text-xs text-gray-400">{d.axis}</span>

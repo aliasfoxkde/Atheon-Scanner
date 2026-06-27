@@ -1,10 +1,49 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ThemeToggle from '../ThemeToggle';
+
+const FOCUSABLE_MENUSelectors =
+  'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 const AppLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const mobileMenuRef = useRef(null);
+  const mobileMenuBtnRef = useRef(null);
+
+  // Close mobile menu on Escape, trap focus within menu while open
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const menu = mobileMenuRef.current;
+    if (!menu) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        mobileMenuBtnRef.current?.focus();
+        return;
+      }
+      // Focus trap: if Tab moves past the last focusable element, wrap to first
+      if (e.key === 'Tab') {
+        const focusable = Array.from(menu.querySelectorAll(FOCUSABLE_MENUSelectors));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    // Focus first menu item on open
+    const firstFocusable = menu.querySelector(FOCUSABLE_MENUSelectors);
+    firstFocusable?.focus();
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
 
   const isActive = useCallback(
     (path) => {
@@ -191,9 +230,11 @@ const AppLayout = ({ children }) => {
             <div className="md:hidden flex items-center space-x-2">
               <ThemeToggle />
               <button
+                ref={mobileMenuBtnRef}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 aria-expanded={mobileMenuOpen}
+                aria-haspopup="menu"
                 className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg transition-colors"
               >
                 {mobileMenuOpen ? (
@@ -222,7 +263,12 @@ const AppLayout = ({ children }) => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-700 shadow-lg">
+          <div
+            ref={mobileMenuRef}
+            className="md:hidden bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-700 shadow-lg"
+            role="menu"
+            aria-label="Navigation menu"
+          >
             <div className="px-2 pt-2 pb-3 space-y-1">
               <Link
                 to="/dashboard"

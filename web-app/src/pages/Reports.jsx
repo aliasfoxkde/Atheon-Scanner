@@ -1,96 +1,103 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { getScoreColor, getTierColor } from '../utils/colors'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getAllRepositories, loadRealScannerData } from '../services/realScannerData'
-import ReportDetailModal from '../components/ReportDetailModal'
-import CompareModal from '../components/CompareModal'
-import Modal from '../components/Modal'
-import { SkeletonTable } from '../components/Skeleton'
-import Pagination from '../components/Pagination'
-import { useToast } from '../contexts/ToastContext'
-import { useSettings } from '../contexts/SettingsContext'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { getScoreColor, getTierColor } from '../utils/colors';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { getAllRepositories, loadRealScannerData } from '../services/realScannerData';
+import ReportDetailModal from '../components/ReportDetailModal';
+import CompareModal from '../components/CompareModal';
+import Modal from '../components/Modal';
+import { SkeletonTable } from '../components/Skeleton';
+import Pagination from '../components/Pagination';
+import { useToast } from '../contexts/ToastContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 // Tier score map — kept inline to avoid minifier TDZ issues with module-level const
 const TIER_SCORE = { A: 1, B: 2, C: 3, D: 4, F: 5 };
 
 export default function Reports() {
-  const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [reports, setReports] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [dataSource, setDataSource] = useState('unknown')
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dataSource, setDataSource] = useState('unknown');
   // Initialize compare selections from URL params ("compare=id1,id2,id3")
   const [selectedForCompare, setSelectedForCompare] = useState(() => {
-    const p = searchParams.get('compare')
-    return p ? p.split(',').filter(Boolean) : []
-  })
-  const [showCompare, setShowCompare] = useState(false)
-  const toast = useToast()
-  const { settings, updateSettings } = useSettings()
+    const p = searchParams.get('compare');
+    return p ? p.split(',').filter(Boolean) : [];
+  });
+  const [showCompare, setShowCompare] = useState(false);
+  const toast = useToast();
+  const { settings, updateSettings } = useSettings();
 
-  const [availableLanguages, setAvailableLanguages] = useState([])
-  const [availableTiers, setAvailableTiers] = useState(['A', 'B', 'C', 'D', 'F'])
+  const [availableLanguages, setAvailableLanguages] = useState([]);
+  const [availableTiers, setAvailableTiers] = useState(['A', 'B', 'C', 'D', 'F']);
   const [filters, setFilters] = useState({
     language: searchParams.get('language') || '',
     tier: searchParams.get('tier') || '',
     minScore: searchParams.get('minScore') || '',
     search: searchParams.get('q') || '',
     bookmarks: false,
-  })
+  });
   const [savedPresets, setSavedPresets] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('atheon_filter_presets') || '[]') } catch { return [] }
-  })
-  const [showPresetModal, setShowPresetModal] = useState(false)
-  const [presetName, setPresetName] = useState('')
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [showColPicker, setShowColPicker] = useState(false)
-  const [colPickerAnchor, setColPickerAnchor] = useState(null)
+    try {
+      return JSON.parse(localStorage.getItem('atheon_filter_presets') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [showPresetModal, setShowPresetModal] = useState(false);
+  const [presetName, setPresetName] = useState('');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showColPicker, setShowColPicker] = useState(false);
+  const [colPickerAnchor, setColPickerAnchor] = useState(null);
 
   // Load bookmarks from localStorage
   const [bookmarks, setBookmarks] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('atheon_bookmarks') || '[]')
+      return JSON.parse(localStorage.getItem('atheon_bookmarks') || '[]');
     } catch {
-      return []
+      return [];
     }
-  })
+  });
   const [sort, setSort] = useState(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('atheon_sort') || '{}')
-      return stored.column ? stored : { column: null, dir: 'asc' }
+      const stored = JSON.parse(localStorage.getItem('atheon_sort') || '{}');
+      return stored.column ? stored : { column: null, dir: 'asc' };
     } catch {
-      return { column: null, dir: 'asc' }
+      return { column: null, dir: 'asc' };
     }
-  })
+  });
   const [pagination, setPagination] = useState({
     page: 1,
     perPage: settings.defaultPageSize,
     total: 0,
     pages: 0,
-  })
+  });
 
   // Close column picker on outside click
   useEffect(() => {
-    if (!showColPicker) return
+    if (!showColPicker) return;
     const handler = (e) => {
-      if (!e.target.closest('[aria-label="Toggle column visibility"]') && !e.target.closest('.col-picker-dropdown')) {
-        setShowColPicker(false)
+      if (
+        !e.target.closest('[aria-label="Toggle column visibility"]') &&
+        !e.target.closest('.col-picker-dropdown')
+      ) {
+        setShowColPicker(false);
       }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [showColPicker])
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showColPicker]);
 
   // Abort controller ref for cancellable fetches
-  const abortRef = useRef(null)
+  const abortRef = useRef(null);
   // Debounce ref for search input
-  const searchDebounceRef = useRef(null)
+  const searchDebounceRef = useRef(null);
 
-  const fetchReports = async (signal) => {
+  const fetchReports = async (signal, cancelled) => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       const response = await getAllRepositories(
         pagination.page,
         pagination.perPage,
@@ -99,313 +106,420 @@ export default function Reports() {
         signal,
         filters.search,
         filters.minScore
-      )
+      );
+      if (cancelled?.()) return;
 
       if (response && response.repositories) {
-        setReports(response.repositories)
+        setReports(response.repositories);
         setPagination((p) => ({
           ...p,
           total: response.total || 0,
           pages: response.pages || 0,
-        }))
-        setDataSource('real_api')
+        }));
+        setDataSource('real_api');
       } else {
-        throw new Error('Invalid response format')
+        throw new Error('Invalid response format');
       }
     } catch (err) {
-      if (err.name === 'AbortError') return
-      setError(err.message)
-      setDataSource('error')
-      toast.error('Failed to load reports')
+      if (err.name === 'AbortError') return;
+      if (cancelled?.()) return;
+      setError(err.message);
+      setDataSource('error');
+      toast.error('Failed to load reports');
     } finally {
-      setLoading(false)
+      if (!cancelled?.()) setLoading(false);
     }
-  }
+  };
 
   // Fetch on filter / pagination changes
   useEffect(() => {
-    if (abortRef.current) abortRef.current.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
-    fetchReports(controller.signal)
-    return () => controller.abort()
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let cancelled = false;
+    fetchReports(controller.signal, () => cancelled);
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, pagination.page, pagination.perPage, settings.defaultPageSize])
+  }, [filters, pagination.page, pagination.perPage, settings.defaultPageSize]);
 
   // Load available filter options from real data
   useEffect(() => {
-    let cancelled = false
-    loadRealScannerData().then((data) => {
-      if (cancelled) return
-      const langs = Object.keys(data.language_distribution || {}).sort()
-      setAvailableLanguages(langs)
-      const tiers = Object.keys(data.tier_distribution || {}).sort((a, b) => (TIER_SCORE[a] ?? 9) - (TIER_SCORE[b] ?? 9))
-      setAvailableTiers(tiers.length ? tiers : ['A', 'B', 'C', 'D', 'F'])
-    }).catch(() => {})
-    return () => { cancelled = true }
-  }, [])
+    let cancelled = false;
+    loadRealScannerData()
+      .then((data) => {
+        if (cancelled) return;
+        const langs = Object.keys(data.language_distribution || {}).sort();
+        setAvailableLanguages(langs);
+        const tiers = Object.keys(data.tier_distribution || {}).sort(
+          (a, b) => (TIER_SCORE[a] ?? 9) - (TIER_SCORE[b] ?? 9)
+        );
+        setAvailableTiers(tiers.length ? tiers : ['A', 'B', 'C', 'D', 'F']);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Sync defaultPageSize changes into pagination
   useEffect(() => {
-    setPagination((p) => ({ ...p, perPage: settings.defaultPageSize, page: 1 }))
-  }, [settings.defaultPageSize])
+    setPagination((p) => ({ ...p, perPage: settings.defaultPageSize, page: 1 }));
+  }, [settings.defaultPageSize]);
 
   // Open compare mode when ?compare=true is in URL
   useEffect(() => {
     if (searchParams.get('compare') === 'true') {
-      setShowCompare(true)
+      setShowCompare(true);
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   const sortedReports = useMemo(() => {
-    let result = reports
+    let result = reports;
     // Filter by bookmarks when the bookmarks filter is active
     if (filters.bookmarks) {
-      result = result.filter((r) => bookmarks.includes(r.id))
+      result = result.filter((r) => bookmarks.includes(r.id));
     }
-    if (!sort.column) return result
-    const { column, dir } = sort
-    const mult = dir === 'asc' ? 1 : -1
+    if (!sort.column) return result;
+    const { column, dir } = sort;
+    const mult = dir === 'asc' ? 1 : -1;
     return [...result].sort((a, b) => {
-      const av = a[column]
-      const bv = b[column]
-      if (column === 'tier') return mult * ((TIER_SCORE[av] ?? 9) - (TIER_SCORE[bv] ?? 9))
-      if (typeof av === 'number' && typeof bv === 'number') return mult * (av - bv)
-      return mult * String(av || '').localeCompare(String(bv || ''))
-    })
-  }, [reports, sort, filters.bookmarks, bookmarks])
+      const av = a[column];
+      const bv = b[column];
+      if (column === 'tier') return mult * ((TIER_SCORE[av] ?? 9) - (TIER_SCORE[bv] ?? 9));
+      if (typeof av === 'number' && typeof bv === 'number') return mult * (av - bv);
+      return mult * String(av || '').localeCompare(String(bv || ''));
+    });
+  }, [reports, sort, filters.bookmarks, bookmarks]);
 
   // Compute filtered total accounting for bookmarks filter
   const filteredTotal = useMemo(() => {
     if (filters.bookmarks) {
-      return reports.filter((r) => bookmarks.includes(r.id)).length
+      return reports.filter((r) => bookmarks.includes(r.id)).length;
     }
-    return pagination.total
-  }, [filters.bookmarks, reports, bookmarks, pagination.total])
+    return pagination.total;
+  }, [filters.bookmarks, reports, bookmarks, pagination.total]);
 
   // Compute table column count based on active settings
   const tableColCount = useMemo(() => {
-    return 6 + (settings.showStars !== false ? 1 : 0) + (settings.showDeps !== false ? 1 : 0) + (settings.showFiles !== false ? 1 : 0) + 1
-  }, [settings.showStars, settings.showDeps, settings.showFiles])
+    return (
+      6 +
+      (settings.showStars !== false ? 1 : 0) +
+      (settings.showDeps !== false ? 1 : 0) +
+      (settings.showFiles !== false ? 1 : 0) +
+      1
+    );
+  }, [settings.showStars, settings.showDeps, settings.showFiles]);
 
   const handleSort = (column) => {
     setSort((s) => {
-      const next = s.column === column ? { column, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { column, dir: 'asc' }
-      try { localStorage.setItem('atheon_sort', JSON.stringify(next)) } catch { /* ignore */ }
-      return next
-    })
-  }
+      const next =
+        s.column === column
+          ? { column, dir: s.dir === 'asc' ? 'desc' : 'asc' }
+          : { column, dir: 'asc' };
+      try {
+        localStorage.setItem('atheon_sort', JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   const handleFilterChange = (field, value) => {
-    setFilters((f) => ({ ...f, [field]: value }))
-    setPagination((p) => ({ ...p, page: 1 }))
-    const next = new URLSearchParams(searchParams)
-    if (value) next.set(field === 'search' ? 'q' : field, value)
-    else next.delete(field === 'search' ? 'q' : field)
-    setSearchParams(next, { replace: true })
-  }
+    setFilters((f) => ({ ...f, [field]: value }));
+    setPagination((p) => ({ ...p, page: 1 }));
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(field === 'search' ? 'q' : field, value);
+    else next.delete(field === 'search' ? 'q' : field);
+    setSearchParams(next, { replace: true });
+  };
 
   // Debounced search handler — avoids hammering on every keystroke
   const handleSearchChange = useCallback((value) => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
-      handleFilterChange('search', value)
-    }, 300)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+      handleFilterChange('search', value);
+    }, 300);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearFilters = () => {
-    setFilters({ language: '', tier: '', minScore: '', search: '', bookmarks: false })
-    setPagination((p) => ({ ...p, page: 1 }))
-    setSearchParams(new URLSearchParams(), { replace: true })
-    toast.info('Filters cleared')
-  }
+    setFilters({ language: '', tier: '', minScore: '', search: '', bookmarks: false });
+    setPagination((p) => ({ ...p, page: 1 }));
+    setSearchParams(new URLSearchParams(), { replace: true });
+    toast.info('Filters cleared');
+  };
 
   const currentFilterState = () => ({
     language: filters.language,
     tier: filters.tier,
     minScore: filters.minScore,
     search: filters.search,
-  })
+  });
 
-  const hasActiveFilters = filters.language || filters.tier || filters.minScore || filters.search || filters.bookmarks
+  const hasActiveFilters =
+    filters.language || filters.tier || filters.minScore || filters.search || filters.bookmarks;
 
   const savePreset = () => {
-    const name = presetName.trim()
-    if (!name) return
-    const entry = { name, filters: currentFilterState(), createdAt: new Date().toISOString() }
-    const next = [entry, ...savedPresets.filter((p) => p.name !== name)].slice(0, 10)
-    setSavedPresets(next)
-    try { localStorage.setItem('atheon_filter_presets', JSON.stringify(next)) } catch {}
-    setPresetName('')
-    setShowPresetModal(false)
-    toast.success(`Preset "${name}" saved`)
-  }
+    const name = presetName.trim();
+    if (!name) return;
+    const entry = { name, filters: currentFilterState(), createdAt: new Date().toISOString() };
+    const next = [entry, ...savedPresets.filter((p) => p.name !== name)].slice(0, 10);
+    setSavedPresets(next);
+    try {
+      localStorage.setItem('atheon_filter_presets', JSON.stringify(next));
+    } catch {}
+    setPresetName('');
+    setShowPresetModal(false);
+    toast.success(`Preset "${name}" saved`);
+  };
 
   const deletePreset = (name) => {
-    const next = savedPresets.filter((p) => p.name !== name)
-    setSavedPresets(next)
-    try { localStorage.setItem('atheon_filter_presets', JSON.stringify(next)) } catch {}
-    toast.info(`Preset "${name}" removed`)
-  }
+    const next = savedPresets.filter((p) => p.name !== name);
+    setSavedPresets(next);
+    try {
+      localStorage.setItem('atheon_filter_presets', JSON.stringify(next));
+    } catch {}
+    toast.info(`Preset "${name}" removed`);
+  };
 
   // Import bookmarks from JSON file
   const handleImportBookmarks = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const text = ev.target.result
-        let ids = []
+        const text = ev.target.result;
+        let ids = [];
         // Try JSON array first
-        try { ids = JSON.parse(text) } catch {
+        try {
+          ids = JSON.parse(text);
+        } catch {
           // Try CSV (one name per line, skip header if present)
-          const lines = text.trim().split('\n')
-          ids = lines.map((l) => l.split(',')[0].trim().replace(/^["']|["']$/g, '')).filter(Boolean)
+          const lines = text.trim().split('\n');
+          ids = lines
+            .map((l) =>
+              l
+                .split(',')[0]
+                .trim()
+                .replace(/^["']|["']$/g, '')
+            )
+            .filter(Boolean);
         }
-        if (!Array.isArray(ids)) throw new Error('Not an array')
-        const currentBookmarks = bookmarks
-        const next = [...new Set([...currentBookmarks, ...ids])]
-        setBookmarks(next)
-        try { localStorage.setItem('atheon_bookmarks', JSON.stringify(next)) } catch {}
-        toast.success(`Imported ${ids.length} bookmark(s)`)
+        if (!Array.isArray(ids)) throw new Error('Not an array');
+        const currentBookmarks = bookmarks;
+        const next = [...new Set([...currentBookmarks, ...ids])];
+        setBookmarks(next);
+        try {
+          localStorage.setItem('atheon_bookmarks', JSON.stringify(next));
+        } catch {}
+        toast.success(`Imported ${ids.length} bookmark(s)`);
       } catch {
-        toast.error('Failed to import bookmarks — invalid format')
+        toast.error('Failed to import bookmarks — invalid format');
       }
-      e.target.value = ''
-    }
-    reader.readAsText(file)
-  }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  };
 
   const applyPreset = (preset) => {
-    setFilters({ ...filters, ...preset.filters, bookmarks: false })
-    const next = new URLSearchParams(searchParams)
-    if (preset.filters.language) next.set('language', preset.filters.language)
-    else next.delete('language')
-    if (preset.filters.tier) next.set('tier', preset.filters.tier)
-    else next.delete('tier')
-    if (preset.filters.minScore) next.set('minScore', preset.filters.minScore)
-    else next.delete('minScore')
-    if (preset.filters.search) next.set('q', preset.filters.search)
-    else next.delete('q')
-    setSearchParams(next, { replace: true })
-    setPagination((p) => ({ ...p, page: 1 }))
-    toast.success(`Applied "${preset.name}"`)
-  }
+    setFilters({ ...filters, ...preset.filters, bookmarks: false });
+    const next = new URLSearchParams(searchParams);
+    if (preset.filters.language) next.set('language', preset.filters.language);
+    else next.delete('language');
+    if (preset.filters.tier) next.set('tier', preset.filters.tier);
+    else next.delete('tier');
+    if (preset.filters.minScore) next.set('minScore', preset.filters.minScore);
+    else next.delete('minScore');
+    if (preset.filters.search) next.set('q', preset.filters.search);
+    else next.delete('q');
+    setSearchParams(next, { replace: true });
+    setPagination((p) => ({ ...p, page: 1 }));
+    toast.success(`Applied "${preset.name}"`);
+  };
 
   const toggleCol = (col) => {
-    const key = `show${col.charAt(0).toUpperCase() + col.slice(1)}`
-    const next = { ...settings, [key]: !settings[key] }
-    updateSettings(next)
-  }
+    const key = `show${col.charAt(0).toUpperCase() + col.slice(1)}`;
+    const next = { ...settings, [key]: !settings[key] };
+    updateSettings(next);
+  };
 
   // Save bookmarks to localStorage
   const saveBookmarks = useCallback((ids) => {
     try {
-      localStorage.setItem('atheon_bookmarks', JSON.stringify(ids))
+      localStorage.setItem('atheon_bookmarks', JSON.stringify(ids));
     } catch {}
-  }, [])
+  }, []);
 
-  const toggleBookmark = useCallback((reportId) => {
-    setBookmarks((prev) => {
-      const next = prev.includes(reportId)
-        ? prev.filter((id) => id !== reportId)
-        : [...prev, reportId]
-      saveBookmarks(next)
-      return next
-    })
-  }, [saveBookmarks])
+  const toggleBookmark = useCallback(
+    (reportId) => {
+      setBookmarks((prev) => {
+        const next = prev.includes(reportId)
+          ? prev.filter((id) => id !== reportId)
+          : [...prev, reportId];
+        saveBookmarks(next);
+        return next;
+      });
+    },
+    [saveBookmarks]
+  );
 
   const handleReportClick = (report) => {
-    navigate(`/reports/${encodeURIComponent(report.id || report.name)}`)
-  }
+    navigate(`/reports/${encodeURIComponent(report.id || report.name)}`);
+  };
 
   // Sync compare selections to URL params
   const syncCompareToUrl = (sel) => {
-    const next = new URLSearchParams(searchParams)
-    if (sel.length > 0) next.set('compare', sel.join(','))
-    else next.delete('compare')
-    setSearchParams(next, { replace: true })
-  }
+    const next = new URLSearchParams(searchParams);
+    if (sel.length > 0) next.set('compare', sel.join(','));
+    else next.delete('compare');
+    setSearchParams(next, { replace: true });
+  };
 
   const toggleCompareSelection = (id) => {
     setSelectedForCompare((sel) => {
-      const next = sel.includes(id) ? sel.filter((x) => x !== id) : sel.length >= 5 ? (toast.warning('Compare up to 5 at once'), sel) : [...sel, id]
-      syncCompareToUrl(next)
-      return next
-    })
-  }
+      const next = sel.includes(id)
+        ? sel.filter((x) => x !== id)
+        : sel.length >= 5
+          ? (toast.warning('Compare up to 5 at once'), sel)
+          : [...sel, id];
+      syncCompareToUrl(next);
+      return next;
+    });
+  };
 
   const clearCompareSelection = () => {
-    setSelectedForCompare([])
-    syncCompareToUrl([])
-    toast.info('Selection cleared')
-  }
+    setSelectedForCompare([]);
+    syncCompareToUrl([]);
+    toast.info('Selection cleared');
+  };
 
   const selectAllOnPage = () => {
-    const pageIds = sortedReports.map((r) => r.id)
-    const allSelected = pageIds.every((id) => selectedForCompare.includes(id))
+    const pageIds = sortedReports.map((r) => r.id);
+    const allSelected = pageIds.every((id) => selectedForCompare.includes(id));
     if (allSelected) {
       // Deselect all on this page
-      const next = selectedForCompare.filter((id) => !pageIds.includes(id))
-      setSelectedForCompare(next)
-      syncCompareToUrl(next)
+      const next = selectedForCompare.filter((id) => !pageIds.includes(id));
+      setSelectedForCompare(next);
+      syncCompareToUrl(next);
     } else {
       // Select all on this page (up to 5 total)
-      const remaining = 5 - selectedForCompare.length
-      const toAdd = pageIds.filter((id) => !selectedForCompare.includes(id)).slice(0, remaining)
-      const next = [...selectedForCompare, ...toAdd]
-      if (toAdd.length < pageIds.length) toast.warning('Compare limited to 5 at once')
-      setSelectedForCompare(next)
-      syncCompareToUrl(next)
+      const remaining = 5 - selectedForCompare.length;
+      const toAdd = pageIds.filter((id) => !selectedForCompare.includes(id)).slice(0, remaining);
+      const next = [...selectedForCompare, ...toAdd];
+      if (toAdd.length < pageIds.length) toast.warning('Compare limited to 5 at once');
+      setSelectedForCompare(next);
+      syncCompareToUrl(next);
     }
-  }
+  };
 
   // Prevent CSV formula injection: prefix cells starting with =, +, -, @, \t with '
+  // Also wrap any cell containing commas, quotes, or newlines in double-quotes (per RFC 4180)
   const safeCsvCell = (val) => {
     const s = String(val ?? '');
+    // Prefix dangerous first characters to prevent formula injection
     if (/^[=+\-@\t\r]/.test(s)) return "'" + s;
+    // Wrap in double-quotes if the field contains special characters
+    if (/[,"\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
     return s;
-  }
+  };
 
   const exportData = (format, allFiltered = false) => {
-    const headers = ['name', 'language', 'quality_score', 'tier', 'stars', 'total_dependencies', 'total_files', 'scan_method', 'scan_date']
+    const headers = [
+      'name',
+      'language',
+      'quality_score',
+      'tier',
+      'stars',
+      'total_dependencies',
+      'total_files',
+      'scan_method',
+      'scan_date',
+    ];
 
     if (allFiltered) {
       // Fetch ALL filtered records across all pages for export
-      setLoading(true)
-      getAllRepositories(1, pagination.total, filters.language, filters.tier, null, filters.search, filters.minScore)
+      setLoading(true);
+      getAllRepositories(
+        1,
+        pagination.total,
+        filters.language,
+        filters.tier,
+        null,
+        filters.search,
+        filters.minScore
+      )
         .then((response) => {
-          setLoading(false)
-          const allRepos = response.repositories || []
-          if (allRepos.length === 0) { toast.error('No data to export'); return }
-          if (format === 'csv') {
-            const lines = [headers.join(','), ...allRepos.map((r) => headers.map((h) => safeCsvCell(r[h])).join(','))]
-            download(`atheon-reports-filtered.csv`, '﻿' + lines.join('\n'), 'text/csv') // BOM for Excel UTF-8
-          } else {
-            download(`atheon-reports-filtered.json`, JSON.stringify({ exportedAt: new Date().toISOString(), filters, total: allRepos.length, reports: allRepos }, null, 2), 'application/json')
+          setLoading(false);
+          const allRepos = response.repositories || [];
+          if (allRepos.length === 0) {
+            toast.error('No data to export');
+            return;
           }
-          toast.success(`Exported ${allRepos.length.toLocaleString()} reports as ${format.toUpperCase()}`)
+          if (format === 'csv') {
+            const lines = [
+              headers.join(','),
+              ...allRepos.map((r) => headers.map((h) => safeCsvCell(r[h])).join(',')),
+            ];
+            download(`atheon-reports-filtered.csv`, '﻿' + lines.join('\n'), 'text/csv'); // BOM for Excel UTF-8
+          } else {
+            download(
+              `atheon-reports-filtered.json`,
+              JSON.stringify(
+                {
+                  exportedAt: new Date().toISOString(),
+                  filters,
+                  total: allRepos.length,
+                  reports: allRepos,
+                },
+                null,
+                2
+              ),
+              'application/json'
+            );
+          }
+          toast.success(
+            `Exported ${allRepos.length.toLocaleString()} reports as ${format.toUpperCase()}`
+          );
         })
-        .catch(() => { setLoading(false); toast.error('Export failed') })
-      return
+        .catch(() => {
+          setLoading(false);
+          toast.error('Export failed');
+        });
+      return;
     }
 
     if (reports.length === 0) {
-      toast.error('No data to export')
-      return
+      toast.error('No data to export');
+      return;
     }
     if (format === 'csv') {
-      const lines = [headers.join(',')]
+      const lines = [headers.join(',')];
       for (const r of reports) {
-        lines.push(headers.map((h) => safeCsvCell(r[h])).join(','))
+        lines.push(headers.map((h) => safeCsvCell(r[h])).join(','));
       }
-      download(`atheon-reports-page${pagination.page}.csv`, '﻿' + lines.join('\n'), 'text/csv')
+      download(`atheon-reports-page${pagination.page}.csv`, '﻿' + lines.join('\n'), 'text/csv');
     } else {
-      download(`atheon-reports-page${pagination.page}.json`, JSON.stringify({ exportedAt: new Date().toISOString(), page: pagination.page, total: pagination.total, reports }, null, 2), 'application/json')
+      download(
+        `atheon-reports-page${pagination.page}.json`,
+        JSON.stringify(
+          {
+            exportedAt: new Date().toISOString(),
+            page: pagination.page,
+            total: pagination.total,
+            reports,
+          },
+          null,
+          2
+        ),
+        'application/json'
+      );
     }
-    toast.success(`Exported ${reports.length} reports as ${format.toUpperCase()}`)
-  }
+    toast.success(`Exported ${reports.length} reports as ${format.toUpperCase()}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -413,7 +527,9 @@ export default function Reports() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Repository Reports</h1>
           <p className="text-gray-400 text-sm sm:text-base">
-            {dataSource === 'real_api' ? `Real data from ${pagination.total.toLocaleString()} analyzed packages` : 'Loading repository data…'}
+            {dataSource === 'real_api'
+              ? `Real data from ${pagination.total.toLocaleString()} analyzed packages`
+              : 'Loading repository data…'}
           </p>
         </div>
         {selectedForCompare.length > 0 && (
@@ -428,7 +544,9 @@ export default function Reports() {
               onClick={() => {
                 setBookmarks((prev) => {
                   const next = [...new Set([...prev, ...selectedForCompare])];
-                  try { localStorage.setItem('atheon_bookmarks', JSON.stringify(next)) } catch {}
+                  try {
+                    localStorage.setItem('atheon_bookmarks', JSON.stringify(next));
+                  } catch {}
                   return next;
                 });
                 toast.success(`Bookmarked ${selectedForCompare.length} packages`);
@@ -476,14 +594,18 @@ export default function Reports() {
         </div>
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <p className="text-gray-400 text-xs sm:text-sm">Page</p>
-          <p className="text-2xl font-bold text-white">{pagination.pages > 0 ? `${pagination.page} / ${pagination.pages}` : '—'}</p>
+          <p className="text-2xl font-bold text-white">
+            {pagination.pages > 0 ? `${pagination.page} / ${pagination.pages}` : '—'}
+          </p>
         </div>
       </div>
 
       <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
           <div className="lg:col-span-2">
-            <label htmlFor="reports-search" className="block text-gray-400 text-xs mb-1">Search</label>
+            <label htmlFor="reports-search" className="block text-gray-400 text-xs mb-1">
+              Search
+            </label>
             <input
               id="reports-search"
               type="search"
@@ -495,7 +617,9 @@ export default function Reports() {
             />
           </div>
           <div>
-            <label htmlFor="reports-language" className="block text-gray-400 text-xs mb-1">Language</label>
+            <label htmlFor="reports-language" className="block text-gray-400 text-xs mb-1">
+              Language
+            </label>
             <select
               id="reports-language"
               value={filters.language}
@@ -504,12 +628,16 @@ export default function Reports() {
             >
               <option value="">All</option>
               {availableLanguages.map((l) => (
-                <option key={l} value={l}>{l}</option>
+                <option key={l} value={l}>
+                  {l}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label htmlFor="reports-tier" className="block text-gray-400 text-xs mb-1">Tier</label>
+            <label htmlFor="reports-tier" className="block text-gray-400 text-xs mb-1">
+              Tier
+            </label>
             <select
               id="reports-tier"
               value={filters.tier}
@@ -518,12 +646,16 @@ export default function Reports() {
             >
               <option value="">All</option>
               {availableTiers.map((t) => (
-                <option key={t} value={t}>Tier {t}</option>
+                <option key={t} value={t}>
+                  Tier {t}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label htmlFor="reports-minscore" className="block text-gray-400 text-xs mb-1">Min score</label>
+            <label htmlFor="reports-minscore" className="block text-gray-400 text-xs mb-1">
+              Min score
+            </label>
             <input
               id="reports-minscore"
               type="number"
@@ -565,7 +697,11 @@ export default function Reports() {
           </div>
         </div>
 
-        {filters.language || filters.tier || filters.minScore || filters.search || filters.bookmarks ? (
+        {filters.language ||
+        filters.tier ||
+        filters.minScore ||
+        filters.search ||
+        filters.bookmarks ? (
           <button
             onClick={clearFilters}
             aria-label="Clear all active filters"
@@ -580,47 +716,78 @@ export default function Reports() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs text-gray-500">Presets:</span>
             {savedPresets.map((p) => (
-              <span key={p.name} className="group flex items-center gap-1 bg-gray-700 hover:bg-gray-600 rounded-full pl-3 pr-1 py-1 text-xs text-gray-200 transition-colors">
-                <button onClick={() => applyPreset(p)} className="hover:text-white">{p.name}</button>
+              <span
+                key={p.name}
+                className="group flex items-center gap-1 bg-gray-700 hover:bg-gray-600 rounded-full pl-3 pr-1 py-1 text-xs text-gray-200 transition-colors"
+              >
+                <button onClick={() => applyPreset(p)} className="hover:text-white">
+                  {p.name}
+                </button>
                 <button
                   onClick={() => deletePreset(p.name)}
                   className="text-gray-400 hover:text-red-400 ml-0.5"
                   aria-label={`Delete preset ${p.name}`}
-                >×</button>
+                >
+                  ×
+                </button>
               </span>
             ))}
           </div>
         )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button onClick={() => window.print()} aria-label="Print report" className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors flex items-center gap-1.5">
+          <button
+            onClick={() => window.print()}
+            aria-label="Print report"
+            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors flex items-center gap-1.5"
+          >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+              />
             </svg>
             Print
           </button>
           {/* Column visibility picker */}
           <div className="relative">
             <button
-              onClick={(e) => { e.stopPropagation(); setShowColPicker((v) => !v) }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowColPicker((v) => !v);
+              }}
               aria-label="Toggle column visibility"
               aria-haspopup="menu"
               aria-expanded={showColPicker}
               className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors flex items-center gap-1.5"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
+                />
+              </svg>
               Columns
             </button>
             {showColPicker && (
-              <div className="absolute z-50 top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-40"
+              <div
+                className="absolute z-50 top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-40"
                 role="menu"
-                onClick={(e) => e.stopPropagation()}>
+                onClick={(e) => e.stopPropagation()}
+              >
                 {[
                   { key: 'showStars', label: '⭐ Stars' },
                   { key: 'showDeps', label: '📦 Deps' },
                   { key: 'showFiles', label: '📄 Files' },
                 ].map((col) => (
-                  <label key={col.key} className="flex items-center gap-2 py-1.5 px-1 cursor-pointer hover:bg-gray-700 rounded text-sm text-white">
+                  <label
+                    key={col.key}
+                    className="flex items-center gap-2 py-1.5 px-1 cursor-pointer hover:bg-gray-700 rounded text-sm text-white"
+                  >
                     <input
                       type="checkbox"
                       checked={settings[col.key] !== false}
@@ -633,7 +800,9 @@ export default function Reports() {
                 <button
                   onClick={() => setShowColPicker(false)}
                   className="mt-2 w-full text-center text-xs text-gray-400 hover:text-white pt-2 border-t border-gray-700"
-                >Done</button>
+                >
+                  Done
+                </button>
               </div>
             )}
           </div>
@@ -644,13 +813,27 @@ export default function Reports() {
               className="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-sm rounded transition-colors flex items-center gap-1.5"
               aria-label="Save current filters as preset"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                />
+              </svg>
               Save Preset
             </button>
           )}
           {/* Import bookmarks */}
           <label className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors cursor-pointer flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
+            </svg>
             Import
             <input
               type="file"
@@ -660,31 +843,51 @@ export default function Reports() {
               aria-label="Import bookmarks from file"
             />
           </label>
-          <button onClick={() => exportData('csv')} className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors">
+          <button
+            onClick={() => exportData('csv')}
+            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors"
+          >
             Page CSV
           </button>
-          <button onClick={() => exportData('json')} className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors">
+          <button
+            onClick={() => exportData('json')}
+            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors"
+          >
             Page JSON
           </button>
           {pagination.total > pagination.perPage && (
             <>
-              <button onClick={() => exportData('csv', true)} className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-sm rounded transition-colors">
+              <button
+                onClick={() => exportData('csv', true)}
+                className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-sm rounded transition-colors"
+              >
                 Export All {pagination.total.toLocaleString()} CSV
               </button>
-              <button onClick={() => exportData('json', true)} className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-sm rounded transition-colors">
+              <button
+                onClick={() => exportData('json', true)}
+                className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-sm rounded transition-colors"
+              >
                 Export All JSON
               </button>
             </>
           )}
           <div className="flex items-center gap-3 ml-auto">
-            <label htmlFor="rows-per-page" className="text-gray-400 text-xs whitespace-nowrap">Rows:</label>
+            <label htmlFor="rows-per-page" className="text-gray-400 text-xs whitespace-nowrap">
+              Rows:
+            </label>
             <select
               id="rows-per-page"
               value={pagination.perPage}
-              onChange={(e) => setPagination((p) => ({ ...p, perPage: Number(e.target.value), page: 1 }))}
+              onChange={(e) =>
+                setPagination((p) => ({ ...p, perPage: Number(e.target.value), page: 1 }))
+              }
               className="bg-gray-700 text-white text-xs rounded px-2 py-1 border border-gray-600"
             >
-              {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
+              {[10, 25, 50, 100].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
             </select>
             <span className="text-gray-400 text-xs">
               {reports.length} on page · {pagination.total.toLocaleString()} total
@@ -708,7 +911,10 @@ export default function Reports() {
                   <input
                     type="checkbox"
                     onChange={selectAllOnPage}
-                    checked={sortedReports.length > 0 && sortedReports.every((r) => selectedForCompare.includes(r.id))}
+                    checked={
+                      sortedReports.length > 0 &&
+                      sortedReports.every((r) => selectedForCompare.includes(r.id))
+                    }
                     aria-label="Select all on page"
                     className="rounded border-gray-600 bg-gray-700 text-purple-500"
                   />
@@ -749,8 +955,8 @@ export default function Reports() {
                 </tr>
               ) : (
                 sortedReports.map((report) => {
-                  const isSelected = selectedForCompare.includes(report.id)
-                  const isBookmarked = bookmarks.includes(report.id)
+                  const isSelected = selectedForCompare.includes(report.id);
+                  const isBookmarked = bookmarks.includes(report.id);
                   return (
                     <tr
                       key={report.id}
@@ -760,7 +966,10 @@ export default function Reports() {
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={(e) => { e.stopPropagation(); toggleCompareSelection(report.id) }}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleCompareSelection(report.id);
+                          }}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={`Select ${report.name} for comparison`}
                           className="rounded border-gray-600 bg-gray-700 text-purple-500"
@@ -768,8 +977,15 @@ export default function Reports() {
                       </td>
                       <td className="px-3 py-3">
                         <button
-                          onClick={(e) => { e.stopPropagation(); toggleBookmark(report.id) }}
-                          aria-label={isBookmarked ? `Remove ${report.name} from bookmarks` : `Bookmark ${report.name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBookmark(report.id);
+                          }}
+                          aria-label={
+                            isBookmarked
+                              ? `Remove ${report.name} from bookmarks`
+                              : `Bookmark ${report.name}`
+                          }
                           className={`text-lg transition-colors ${isBookmarked ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-600 hover:text-yellow-400'}`}
                         >
                           ★
@@ -781,49 +997,93 @@ export default function Reports() {
                       >
                         <div className="truncate max-w-xs">{report.name}</div>
                       </td>
-                      <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">
+                      <td
+                        onClick={() => handleReportClick(report)}
+                        className="px-3 py-3 text-gray-300 text-sm cursor-pointer"
+                      >
                         {report.language}
-                        {report.scan_date && (() => {
-                          const days = (Date.now() - new Date(report.scan_date).getTime()) / 86400000;
-                          if (days <= 7) return <span title={`Scanned ${Math.round(days)} days ago`} className="ml-1.5 px-1.5 py-0.5 bg-cyan-800 text-white text-xs font-bold rounded">NEW</span>;
-                          return null;
-                        })()}
+                        {report.scan_date &&
+                          (() => {
+                            const days =
+                              (Date.now() - new Date(report.scan_date).getTime()) / 86400000;
+                            if (days <= 7)
+                              return (
+                                <span
+                                  title={`Scanned ${Math.round(days)} days ago`}
+                                  className="ml-1.5 px-1.5 py-0.5 bg-cyan-800 text-white text-xs font-bold rounded"
+                                >
+                                  NEW
+                                </span>
+                              );
+                            return null;
+                          })()}
                       </td>
-                      <td onClick={() => handleReportClick(report)} className="px-3 py-3 cursor-pointer">
+                      <td
+                        onClick={() => handleReportClick(report)}
+                        className="px-3 py-3 cursor-pointer"
+                      >
                         <span className={`font-bold ${getScoreColor(report.quality_score)}`}>
                           {report.quality_score}
                         </span>
                         {report.quality_score >= 90 ? (
-                          <span title="Top tier — 90+" className="ml-1 text-green-400 text-xs">●</span>
+                          <span title="Top tier — 90+" className="ml-1 text-green-400 text-xs">
+                            ●
+                          </span>
                         ) : report.quality_score < 50 ? (
-                          <span title="Needs attention — below 50" className="ml-1 text-red-400 text-xs">●</span>
+                          <span
+                            title="Needs attention — below 50"
+                            className="ml-1 text-red-400 text-xs"
+                          >
+                            ●
+                          </span>
                         ) : null}
                       </td>
-                      <td onClick={() => handleReportClick(report)} className="px-3 py-3 cursor-pointer">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getTierColor(report.tier)}`}>
+                      <td
+                        onClick={() => handleReportClick(report)}
+                        className="px-3 py-3 cursor-pointer"
+                      >
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-medium ${getTierColor(report.tier)}`}
+                        >
                           {report.tier}
                         </span>
                       </td>
                       {settings.showStars !== false && (
-                        <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">
-                          {report.stars > 0 ? (report.stars >= 1000 ? `${(report.stars / 1000).toFixed(1)}k` : report.stars) : '—'}
+                        <td
+                          onClick={() => handleReportClick(report)}
+                          className="px-3 py-3 text-gray-300 text-sm cursor-pointer"
+                        >
+                          {report.stars > 0
+                            ? report.stars >= 1000
+                              ? `${(report.stars / 1000).toFixed(1)}k`
+                              : report.stars
+                            : '—'}
                         </td>
                       )}
                       {settings.showDeps !== false && (
-                        <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">
+                        <td
+                          onClick={() => handleReportClick(report)}
+                          className="px-3 py-3 text-gray-300 text-sm cursor-pointer"
+                        >
                           {report.total_dependencies > 0 ? report.total_dependencies : '—'}
                         </td>
                       )}
                       {settings.showFiles !== false && (
-                        <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">
+                        <td
+                          onClick={() => handleReportClick(report)}
+                          className="px-3 py-3 text-gray-300 text-sm cursor-pointer"
+                        >
                           {report.total_files > 0 ? report.total_files.toLocaleString() : '—'}
                         </td>
                       )}
-                      <td onClick={() => handleReportClick(report)} className="px-3 py-3 text-gray-300 text-sm cursor-pointer">
+                      <td
+                        onClick={() => handleReportClick(report)}
+                        className="px-3 py-3 text-gray-300 text-sm cursor-pointer"
+                      >
                         {report.forks > 0 ? report.forks.toLocaleString() : '—'}
                       </td>
                     </tr>
-                  )
+                  );
                 })
               )}
             </tbody>
@@ -847,16 +1107,33 @@ export default function Reports() {
 
       {/* Save preset modal */}
       {showPresetModal && (
-        <Modal id="save-preset-modal" label="Save Filter Preset" onClose={() => setShowPresetModal(false)} size="max-w-sm">
+        <Modal
+          id="save-preset-modal"
+          label="Save Filter Preset"
+          onClose={() => setShowPresetModal(false)}
+          size="max-w-sm"
+        >
           <div className="p-6">
             <h3 className="text-white font-semibold mb-4">Save Filter Preset</h3>
-            <p className="text-gray-400 text-xs mb-3">Save the current filters as a quick-access preset.</p>
+            <p className="text-gray-400 text-xs mb-3">
+              Save the current filters as a quick-access preset.
+            </p>
             <div className="mb-4">
               <div className="flex flex-wrap gap-1 mb-3 text-xs text-gray-400">
-                {filters.language && <span className="bg-gray-700 px-2 py-0.5 rounded">Lang: {filters.language}</span>}
-                {filters.tier && <span className="bg-gray-700 px-2 py-0.5 rounded">Tier: {filters.tier}</span>}
-                {filters.minScore && <span className="bg-gray-700 px-2 py-0.5 rounded">Min: {filters.minScore}</span>}
-                {filters.search && <span className="bg-gray-700 px-2 py-0.5 rounded truncate max-w-32">Q: {filters.search}</span>}
+                {filters.language && (
+                  <span className="bg-gray-700 px-2 py-0.5 rounded">Lang: {filters.language}</span>
+                )}
+                {filters.tier && (
+                  <span className="bg-gray-700 px-2 py-0.5 rounded">Tier: {filters.tier}</span>
+                )}
+                {filters.minScore && (
+                  <span className="bg-gray-700 px-2 py-0.5 rounded">Min: {filters.minScore}</span>
+                )}
+                {filters.search && (
+                  <span className="bg-gray-700 px-2 py-0.5 rounded truncate max-w-32">
+                    Q: {filters.search}
+                  </span>
+                )}
               </div>
               <input
                 autoFocus
@@ -870,24 +1147,35 @@ export default function Reports() {
               />
             </div>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowPresetModal(false)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm">Cancel</button>
-              <button onClick={savePreset} disabled={!presetName.trim()} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg text-sm">Save</button>
+              <button
+                onClick={() => setShowPresetModal(false)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={savePreset}
+                disabled={!presetName.trim()}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg text-sm"
+              >
+                Save
+              </button>
             </div>
           </div>
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 function download(filename, content, type) {
-  const blob = new Blob([content], { type })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

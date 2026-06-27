@@ -126,8 +126,9 @@ export default function ReportDetail() {
   }, [id, load]);
 
   useEffect(() => {
+    setActiveTab('summary');
     window.scrollTo(0, 0);
-  }, [activeTab]);
+  }, [id]);
 
   const handleShare = async () => {
     try {
@@ -966,11 +967,12 @@ function DependenciesPanel({ report, lang }) {
       setLoading(false);
       return;
     }
-    let mounted = true;
+    let current = true;
+    const requestId = Symbol();
     const isPy = lang === 'Python';
     const fetcher = isPy ? fetchPypiDeps : fetchNpmDeps;
     fetcher(pkgName).then((data) => {
-      if (!mounted) return;
+      if (!current) return;
       if (data) {
         setProdDeps(data.dependencies || {});
         setDevDeps(data.devDependencies || {});
@@ -982,7 +984,7 @@ function DependenciesPanel({ report, lang }) {
       setLoading(false);
     });
     return () => {
-      mounted = false;
+      current = false;
     };
   }, [pkgName, lang]);
 

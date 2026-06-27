@@ -66,14 +66,14 @@
 - [x] Add CSV/JSON import for watchlist/bookmarks
 - [ ] Add search autocomplete with debounce visualization
 - [ ] Add data refresh indicator (last-updated timestamp with countdown)
-- [ ] Improve print stylesheet (add ReportDetail print view)
+- [x] Improve print stylesheet (add ReportDetail print view)
 - [ ] Add `/api` page with interactive API explorer
 
 ### Low Priority / Nice-to-Have
-- [ ] Custom scrollbar styling
+- [x] Custom scrollbar styling
+- [x] `prefers-reduced-motion` media query check
+- [x] Apple touch icon (uses icon-192.svg)
 - [ ] Animated page transitions
-- [ ] Add `prefers-reduced-motion` media query check for animations
 - [ ] Favicon.ico fallback for very old browsers
 - [ ] Add `lang` attribute dynamic update for i18n readiness
-- [ ] Apple touch icon (180x180 PNG)
 - [ ] Add changelog entry for web-app releases

@@ -3,8 +3,8 @@
 ## 2026-06-26
 
 ### Deployment
-- Deployed to https://e7a4bf12.atheon-scanner.pages.dev (latest)
-- Commits: 84eda596 → fe71202a (E2E test fix, React.lazy, import)
+- Deployed to https://081b17d7.atheon-scanner.pages.dev (latest)
+- Commits: 84eda596 → 06d357ae (E2E fix, React.lazy, import, print)
 - Git remote: https://github.com/aliasfoxkde/Atheon-Scanner
 - Commits pushed: 5ad213df → b5d1ed08 (12 new commits this session)
 

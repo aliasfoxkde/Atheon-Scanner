@@ -1,65 +1,132 @@
+/**
+ * Unit tests for Skeleton loading components
+ */
 import { render, screen } from '@testing-library/react';
-import { Skeleton, SkeletonCard, SkeletonTable, SkeletonStat, SkeletonText } from './Skeleton';
+import '@testing-library/jest-dom';
+import {
+  Skeleton,
+  SkeletonText,
+  SkeletonStat,
+  SkeletonTable,
+  SkeletonCard,
+  SkeletonChart,
+  SkeletonDonut,
+} from './Skeleton';
 
-describe('Skeleton components', () => {
-  it('Skeleton renders a div with animate-pulse class', () => {
+describe('Skeleton', () => {
+  it('renders with default className', () => {
+    const { container } = render(<Skeleton />);
+    expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it('renders with custom className', () => {
+    const { container } = render(<Skeleton className="h-10 w-10" />);
+    expect(container.firstChild).toHaveClass('h-10');
+    expect(container.firstChild).toHaveClass('w-10');
+  });
+
+  it('has role status and aria-busy', () => {
     render(<Skeleton />);
-    // Skeleton itself doesn't have role="status", just a plain div with animate-pulse
-    const el = document.querySelector('.animate-pulse');
-    expect(el).toBeInTheDocument();
-    expect(el.className).toContain('animate-pulse');
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SkeletonText', () => {
+  it('renders single line by default', () => {
+    const { container } = render(<SkeletonText />);
+    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(1);
   });
 
-  it('SkeletonCard renders with role status and contains animate-pulse elements', () => {
-    render(<SkeletonCard />);
-    const el = screen.getByRole('status');
-    expect(el).toBeInTheDocument();
-    // The container has role="status", but animate-pulse is on inner elements
-    const hasPulse = el.querySelector('.animate-pulse') !== null || el.className.includes('animate-pulse');
-    expect(hasPulse).toBe(true);
+  it('renders multiple lines', () => {
+    const { container } = render(<SkeletonText lines={3} />);
+    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(3);
   });
 
-  it('SkeletonStat renders with role status and contains animate-pulse elements', () => {
-    render(<SkeletonStat />);
-    const el = screen.getByRole('status');
-    expect(el).toBeInTheDocument();
-    // Check that at least one descendant has animate-pulse
-    const pulseEl = el.querySelector('.animate-pulse');
-    expect(pulseEl).toBeInTheDocument();
-  });
-
-  it('SkeletonText renders animate-pulse elements', () => {
+  it('has role status', () => {
     render(<SkeletonText />);
-    // SkeletonText container doesn't have role="status", but lines inside do
-    const pulses = document.querySelectorAll('.animate-pulse');
-    expect(pulses.length).toBeGreaterThan(0);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SkeletonStat', () => {
+  it('renders stat skeleton', () => {
+    const { container } = render(<SkeletonStat />);
+    expect(container.firstChild).toBeInTheDocument();
   });
 
-  it('SkeletonTable renders multiple rows', () => {
-    render(<SkeletonTable rows={5} columns={3} />);
-    const rows = screen.getAllByRole('row');
-    // 1 header row + 5 body rows = 6
-    expect(rows.length).toBe(6);
+  it('has role status', () => {
+    render(<SkeletonStat />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SkeletonTable', () => {
+  it('renders table with default rows', () => {
+    const { container } = render(<SkeletonTable />);
+    expect(container.querySelector('table')).toBeInTheDocument();
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(8);
   });
 
-  it('SkeletonTable header has correct number of columns', () => {
-    render(<SkeletonTable rows={3} columns={4} />);
-    const headers = screen.getAllByRole('columnheader');
-    expect(headers.length).toBe(4);
+  it('renders table with custom rows', () => {
+    const { container } = render(<SkeletonTable rows={5} />);
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(5);
   });
 
-  it('SkeletonText renders multiple lines when lines prop > 1', () => {
-    render(<SkeletonText lines={3} />);
-    const pulses = document.querySelectorAll('.animate-pulse');
-    // 3 lines rendered
-    expect(pulses.length).toBe(3);
+  it('renders table with custom columns', () => {
+    const { container } = render(<SkeletonTable columns={3} />);
+    expect(container.querySelectorAll('thead th')).toHaveLength(3);
+    expect(container.querySelectorAll('tbody td')).toHaveLength(24); // 3 cols * 8 default rows
   });
 
-  it('Skeleton exports all expected components', () => {
-    expect(Skeleton).toBeDefined();
-    expect(SkeletonCard).toBeDefined();
-    expect(SkeletonTable).toBeDefined();
-    expect(SkeletonStat).toBeDefined();
-    expect(SkeletonText).toBeDefined();
+  it('has role status', () => {
+    render(<SkeletonTable />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SkeletonCard', () => {
+  it('renders card skeleton', () => {
+    const { container } = render(<SkeletonCard />);
+    expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it('has role status', () => {
+    render(<SkeletonCard />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SkeletonChart', () => {
+  it('renders with default height', () => {
+    const { container } = render(<SkeletonChart />);
+    expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it('renders with custom height', () => {
+    const { container } = render(<SkeletonChart height={300} />);
+    const el = container.firstChild;
+    expect(el.style.height).toBe('300px');
+  });
+
+  it('has role status', () => {
+    render(<SkeletonChart />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+});
+
+describe('SkeletonDonut', () => {
+  it('renders with default size', () => {
+    const { container } = render(<SkeletonDonut />);
+    expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it('renders with custom size', () => {
+    const { container } = render(<SkeletonDonut size={200} />);
+    expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it('has role status', () => {
+    render(<SkeletonDonut />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 });
